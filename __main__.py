@@ -1,7 +1,18 @@
-from .cli import app
+import requests
 
-def main():
-    app()
+from dexter.core.config import (
+    TIMEOUT,
+    USER_AGENT
+)
 
-if __name__ == "__main__":
-    main()
+def create_session():
+
+    session = requests.Session()
+
+    session.headers.update({
+        "User-Agent": USER_AGENT
+    })
+
+    session.verify = False
+
+    return session

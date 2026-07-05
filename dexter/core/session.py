@@ -5,21 +5,14 @@ from dexter.core.config import (
     USER_AGENT
 )
 
-
 def create_session():
 
     session = requests.Session()
 
     session.headers.update({
-
-        "User-Agent":
-
-            USER_AGENT
-
+        "User-Agent": USER_AGENT
     })
 
     session.verify = False
-
-    session.timeout = TIMEOUT
 
     return session

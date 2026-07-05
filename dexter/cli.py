@@ -1,7 +1,7 @@
 import typer
 
 from dexter.core.scanner import Scanner
-from dexter.ui.render import render_scan
+from dexter.ui.report_panel import render_scan
 
 app = typer.Typer()
 
