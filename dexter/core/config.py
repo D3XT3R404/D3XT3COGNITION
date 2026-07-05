@@ -1,0 +1,7 @@
+TIMEOUT = 10
+
+USER_AGENT = (
+    "DEXTER/0.1"
+)
+
+VERIFY_SSL = False

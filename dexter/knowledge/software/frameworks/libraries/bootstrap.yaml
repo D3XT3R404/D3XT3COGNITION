@@ -1,0 +1,20 @@
+name: Bootstrap
+
+signatures:
+  scripts:
+    - "bootstrap"
+  html:
+    - "class=\"container"
+    - "class=\"row"
+
+versions:
+  "4.x":
+    notes:
+      - "Common XSS via tooltip/popover misuse"
+
+  "5.x":
+    notes:
+      - "No major CVE critical, but misconfiguration risk remains"
+
+references:
+  - https://getbootstrap.com/

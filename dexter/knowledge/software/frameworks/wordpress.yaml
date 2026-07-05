@@ -1,0 +1,47 @@
+name: WordPress
+
+signatures:
+  paths:
+    - "/wp-content/"
+    - "/wp-json/"
+    - "/wp-includes/"
+  html:
+    - "wp-content"
+    - "wp-emoji"
+    - "WordPress"
+
+versions:
+  "4.7 - 4.7.1":
+    status: vulnerable
+    severity: critical
+    cves:
+      - CVE-2017-1001000
+    description: REST API privilege escalation
+    impact:
+      - Full post modification without authentication
+    references:
+      - https://nvd.nist.gov/vuln/detail/CVE-2017-1001000
+
+  "5.0 - 5.2":
+    status: vulnerable
+    severity: high
+    cves:
+      - CVE-2019-8942
+    description: Path traversal via media handling
+    impact:
+      - File read / upload abuse
+
+  "5.8 - 6.x":
+    status: moderate
+    notes:
+      - "Core relatively stable but plugin ecosystem is main risk vector"
+      - "Major attack surface comes from plugins/themes"
+
+attack_surface:
+  - plugins
+  - themes
+  - upload handlers
+  - REST API
+
+notes:
+  - "WordPress security is highly dependent on third-party components"

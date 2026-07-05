@@ -1,0 +1,38 @@
+name: Apache HTTP Server
+
+signatures:
+  headers:
+    - "Apache"
+    - "apache/"
+  server_regex:
+    - "Apache/([\\d\\.]+)"
+
+versions:
+  "2.4.49":
+    status: vulnerable
+    severity: critical
+    cves:
+      - CVE-2021-41773
+      - CVE-2021-42013
+    description: Path traversal and potential RCE via crafted requests
+    impact:
+      - Unauthorized file access
+      - Potential remote code execution
+    exploitation_condition: "mod_cgi enabled + misconfigured directory permissions"
+    references:
+      - https://nvd.nist.gov/vuln/detail/CVE-2021-41773
+
+  "2.4.50":
+    status: vulnerable
+    severity: high
+    cves:
+      - CVE-2021-42013
+    description: Incomplete fix of CVE-2021-41773 leading to bypass
+    impact:
+      - Path traversal
+      - Potential sensitive file disclosure
+    references:
+      - https://nvd.nist.gov/vuln/detail/CVE-2021-42013
+
+notes:
+  - "Apache versions below 2.4.51 often require careful review in public exposure environments"

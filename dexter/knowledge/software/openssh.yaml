@@ -1,0 +1,20 @@
+name: OpenSSH
+
+signatures:
+  banners:
+    - "OpenSSH"
+
+  regex:
+    - "OpenSSH_([0-9\\.]+)"
+
+versions:
+  "7.2":
+    cves:
+      - CVE-2016-0777
+      - CVE-2016-0778
+
+  "8.2":
+    notes:
+      - "user enumeration risk in some configs"
+
+severity: medium

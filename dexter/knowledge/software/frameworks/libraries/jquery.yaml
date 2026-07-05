@@ -1,0 +1,33 @@
+name: jQuery
+
+signatures:
+  scripts:
+    - "jquery"
+    - "jquery.min.js"
+
+versions:
+  "<3.5.0":
+    status: vulnerable
+    severity: high
+    cves:
+      - CVE-2020-11022
+      - CVE-2020-11023
+    description: XSS via improper HTML parsing in jQuery methods like .html()
+    impact:
+      - DOM-based XSS
+      - Script injection
+    references:
+      - https://nvd.nist.gov/vuln/detail/CVE-2020-11022
+
+  "3.5.0 - 3.6.0":
+    status: partially mitigated
+    notes:
+      - "Still vulnerable if developers misuse DOM manipulation APIs"
+
+  "3.7.1":
+    status: safe
+    notes:
+      - "No known critical CVEs in core library"
+
+notes:
+  - "Most jQuery vulnerabilities are exploitation of unsafe usage, not library bug alone"
