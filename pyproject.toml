@@ -6,6 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "dexter"
 version = "0.1.0"
 description = "D3XT3COGNITION Framework"
+readme = "README.md"
 requires-python = ">=3.10"
 
 dependencies = [
@@ -19,4 +20,8 @@ dependencies = [
 dexter = "dexter.__main__:main"
 
 [tool.setuptools]
-packages = ["dexter"]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["dexter*"]
