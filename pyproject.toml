@@ -12,8 +12,11 @@ dependencies = [
     "rich",
     "typer",
     "pyyaml",
-    "requests"
+    "requests",
 ]
 
 [project.scripts]
 dexter = "dexter.__main__:main"
+
+[tool.setuptools]
+packages = ["dexter"]
