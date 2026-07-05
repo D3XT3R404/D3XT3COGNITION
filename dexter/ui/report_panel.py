@@ -162,3 +162,6 @@ def render_scan(target, results):
     console.print(
         "[bold green]✓ Scan Completed[/bold green]"
     )
+    
+    def reports(target, results):
+    return render_scan(target, results)
