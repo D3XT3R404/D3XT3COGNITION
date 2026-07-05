@@ -1,18 +1,17 @@
-from abc import ABC
-from abc import abstractmethod
-
-from typing import Any
+from abc import ABC, abstractmethod
 
 
 class BaseEngine(ABC):
+    """
+    Base class untuk seluruh engine DEXTER.
+    """
+
+    # wajib dioverride
+    name = "base"
 
     @abstractmethod
-    def run(
-
-            self,
-
-            data: Any
-
-    ) -> Any:
-
+    def run(self, context):
+        """
+        Jalankan engine.
+        """
         raise NotImplementedError

@@ -1,17 +1,7 @@
 name: Laravel
 
-confidence: 90
-
-cookies:
-
-- laravel_session
-
-- XSRF-TOKEN
-
-html:
-
-- csrf-token
-
-headers:
-
-- x-powered-by
+keywords:
+  - laravel
+  - laravel_session
+  - csrf-token
+  - livewire

@@ -1,5 +1,4 @@
-from pathlib import Path
-
+import os
 import yaml
 
 
@@ -7,58 +6,34 @@ class FingerprintLoader:
 
     def __init__(self):
 
-        self.base = Path(
-
-            "dexter/fingerprints"
-
+        self.base = os.path.join(
+            os.path.dirname(__file__),
+            "..",
+            "fingerprints"
         )
 
-    def load(
-
-            self,
-
-            category
-
-    ):
+    def load(self):
 
         fingerprints = []
 
-        path = self.base / category
+        for root, _, files in os.walk(self.base):
 
-        if not path.exists():
+            for file in files:
 
-            return []
+                if not file.endswith(".yaml"):
+                    continue
 
-        for file in path.glob(
-
-                "*.yaml"
-
-        ):
-
-            try:
+                path = os.path.join(root, file)
 
                 with open(
-
-                        file,
-
-                        encoding="utf-8"
-
+                    path,
+                    encoding="utf-8"
                 ) as f:
-
-                    data = yaml.safe_load(
-
-                        f
-
-                    )
 
                     fingerprints.append(
 
-                        data
+                        yaml.safe_load(f)
 
                     )
-
-            except:
-
-                pass
 
         return fingerprints

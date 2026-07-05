@@ -1,82 +1,41 @@
-import requests
-
-from dexter.core.base_engine import (
-
-    BaseEngine
-
-)
+from dexter.core.base_engine import BaseEngine
 
 
-class FrameworkEngine(
-
-    BaseEngine
-
-):
+class FrameworkEngine(BaseEngine):
 
     name = "framework"
 
-    def run(
+    def run(self, context):
 
-            self,
+        framework = None
 
-            target
+        cookies = context.cookies
 
-    ):
+        html = ""
 
-        findings = []
+        if context.response:
+            html = context.response.text.lower()
 
-        try:
+        headers = context.headers
 
-            r = requests.get(
+        if "laravel_session" in cookies:
+            framework = "Laravel"
 
-                f"https://{target}",
+        elif "xsrf-token" in cookies:
+            framework = "Laravel"
 
-                timeout=10
+        elif "__next" in html:
+            framework = "Next.js"
 
-            )
+        elif "__nuxt" in html:
+            framework = "Nuxt"
 
-            html = r.text.lower()
+        elif "django" in headers.get("Server", "").lower():
+            framework = "Django"
 
-            cookies = str(
+        elif "express" in headers.get("X-Powered-By", "").lower():
+            framework = "Express"
 
-                r.cookies
+        context.framework = framework
 
-            )
-
-            if "laravel_session" in cookies:
-
-                findings.append(
-
-                    "Laravel"
-
-                )
-
-            if "__next" in html:
-
-                findings.append(
-
-                    "NextJS"
-
-                )
-
-            if "react" in html:
-
-                findings.append(
-
-                    "React"
-
-                )
-
-            if "vue" in html:
-
-                findings.append(
-
-                    "Vue"
-
-                )
-
-        except:
-
-            pass
-
-        return findings
+        return framework

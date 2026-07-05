@@ -1,32 +1,30 @@
 import requests
 
+from dexter.core.base_engine import BaseEngine
 
-class HeaderEngine:
 
-    def run(
+class HeaderEngine(BaseEngine):
 
-            self,
+    name = "headers"
 
-            url
+    def run(self, context):
 
-    ):
+        response = requests.get(
 
-        try:
+            context.target,
 
-            r = requests.get(
+            timeout=10,
 
-                url,
+            allow_redirects=True
 
-                timeout=10
+        )
 
-            )
+        context.response = response
 
-            return dict(
+        context.headers = dict(
 
-                r.headers
+            response.headers
 
-            )
+        )
 
-        except:
-
-            return {}
+        return context.headers

@@ -1,93 +1,22 @@
+import re
+
+
 class Matcher:
 
-    def match(
+    @staticmethod
+    def regex(pattern, text):
 
-            self,
+        try:
+            return re.search(
+                pattern,
+                text,
+                re.I
+            )
 
-            fp,
+        except Exception:
+            return None
 
-            html,
+    @staticmethod
+    def contains(keyword, text):
 
-            cookies,
-
-            headers
-
-    ):
-
-        score = 0
-
-        evidence = []
-
-        ################################
-
-        for item in fp.get(
-
-                "html",
-
-                []
-
-        ):
-
-            if item.lower() in html:
-
-                score += 25
-
-                evidence.append(
-
-                    item
-
-                )
-
-        ################################
-
-        for item in fp.get(
-
-                "cookies",
-
-                []
-
-        ):
-
-            if item in cookies:
-
-                score += 25
-
-                evidence.append(
-
-                    item
-
-                )
-
-        ################################
-
-        for item in fp.get(
-
-                "headers",
-
-                []
-
-        ):
-
-            if item in headers:
-
-                score += 25
-
-                evidence.append(
-
-                    item
-
-                )
-
-        ################################
-
-        return {
-
-            "score":
-
-                score,
-
-            "evidence":
-
-                evidence
-
-        }
+        return keyword.lower() in text.lower()

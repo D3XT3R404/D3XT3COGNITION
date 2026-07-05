@@ -1,105 +1,73 @@
+import os
 import yaml
 
-from pathlib import Path
+from dexter.core.base_engine import BaseEngine
 
 
-class KnowledgeEngine:
+class KnowledgeEngine(BaseEngine):
 
     name = "knowledge"
 
-    def __init__(self):
+    def run(self, context):
 
-        self.db_path = Path(
+        base = os.path.join(
 
-            "dexter/knowledge"
+            os.path.dirname(__file__),
+
+            "..",
+
+            "knowledge",
+
+            "software"
 
         )
 
-        self.cache = {}
-
-        self._load_db()
-
-
-    # -------------------------
-
-    def _load_db(self):
-
-        for file in self.db_path.rglob("*.yaml"):
-
-            with open(file, "r", encoding="utf-8") as f:
-
-                data = yaml.safe_load(f)
-
-                if data:
-
-                    self.cache[data["name"].lower()] = data
-
-
-    # -------------------------
-
-    def _match_version(self, version, rule_version):
-
-        if not version or not rule_version:
-
-            return False
-
-        if rule_version.startswith("<"):
-
-            return version < rule_version[1:]
-
-        if "-" in rule_version:
-
-            start, end = rule_version.split("-")
-
-            return start.strip() <= version <= end.strip()
-
-        return version == rule_version
-
-
-    # -------------------------
-
-    def run(self, data):
-
-        techs = data.get("technologies", [])
-
         results = []
 
-        for tech in techs:
+        versions = context.results.get(
 
-            name = tech.get("name", "").lower()
+            "versions",
 
-            version = tech.get("version", "")
+            {}
 
-            if name not in self.cache:
+        )
+
+        for software in versions:
+
+            file = os.path.join(
+
+                base,
+
+                software.lower() + ".yaml"
+
+            )
+
+            if not os.path.exists(file):
 
                 continue
 
-            db = self.cache[name]
+            with open(
 
-            versions = db.get("versions", {})
+                file,
 
-            for v_rule, v_data in versions.items():
+                encoding="utf-8"
 
-                if self._match_version(version, v_rule):
+            ) as f:
 
-                    results.append({
+                db = yaml.safe_load(f)
 
-                        "name": tech.get("name"),
+            results.append(
 
-                        "version": version,
+                {
 
-                        "severity": v_data.get("severity", "unknown"),
+                    "software": software,
 
-                        "cves": v_data.get("cves", []),
+                    "version": versions[software],
 
-                        "description": v_data.get("description", ""),
+                    "knowledge": db
 
-                        "notes": v_data.get("notes", []),
+                }
 
-                        "confidence": 90
-
-                    })
-
-                    break
+            )
 
         return results

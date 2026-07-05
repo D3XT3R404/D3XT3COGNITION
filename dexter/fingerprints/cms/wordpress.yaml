@@ -1,29 +1,6 @@
 name: WordPress
 
-confidence: 95
-
-cookies:
-
-- wordpress_logged_in
-
-- wordpress_test_cookie
-
-headers:
-
-- x-pingback
-
-html:
-
-- wp-content
-
-- wp-includes
-
-- wp-json
-
-paths:
-
-- /wp-admin
-
-- /wp-content
-
-- /wp-json
+keywords:
+  - wp-content
+  - wp-includes
+  - wordpress

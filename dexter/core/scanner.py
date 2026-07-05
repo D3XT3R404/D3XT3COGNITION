@@ -1,181 +1,94 @@
+from dexter.core.context import ScanContext
 from dexter.core.registry import EngineRegistry
-from dexter.core.adapter_manager import AdapterManager
-from dexter.engines.dns_engine import DNSEngine
+from dexter.engines.technology_engine import TechnologyEngine
+from dexter.engines.framework_engine import FrameworkEngine
+from dexter.engines.version_engine import VersionEngine
 from dexter.engines.header_engine import HeaderEngine
 from dexter.engines.cookie_engine import CookieEngine
-from dexter.engines.tls_engine import TLSEngine
-from dexter.engines.cms_engine import CMSEngine
-from dexter.engines.framework_engine import FrameworkEngine
-from dexter.engines.waf_engine import WAFEngine
 from dexter.engines.metadata_engine import MetadataEngine
-from dexter.engines.robots_engine import RobotsEngine
-from dexter.engines.sitemap_engine import SitemapEngine
-from dexter.reports.reporter import Reporter
-from dexter.engines.version_engine import VersionEngine
+from dexter.engines.fingerprint_engine import FingerprintEngine
 from dexter.engines.knowledge_engine import KnowledgeEngine
-
-from dexter.engines.security_headers_engine import (
-
-    SecurityHeadersEngine
-
-)
-
-from dexter.engines.js_engine import (
-
-    JSEngine
-
-)
-from dexter.core.correlation_engine import (
-
-    CorrelationEngine
-
-)
+from dexter.engines.security_headers_engine import SecurityHeadersEngine
+from dexter.engines.comment_engine import CommentEngine
+from dexter.engines.email_engine import EmailEngine
+from dexter.engines.endpoint_engine import EndpointEngine
+from dexter.engines.form_engine import FormEngine
+from dexter.engines.evidence_engine import EvidenceEngine
 
 
 class Scanner:
 
-    def __init__(
+    def __init__(self):
 
-            self
+        self.registry = EngineRegistry()
 
-    ):
+        self.registry.register(
 
-        self.normal = (
-            EngineRegistry()
-        )
-
-        self.deep = (
-            EngineRegistry()
-        )
-
-        self.adapters = (
-            AdapterManager()
-        )
-        self.reporter = (
-            Reporter()
-        )
-        self.correlation = (
-            CorrelationEngine()
-        )
-        self.version_engine = (
-            VersionEngine()
-        )
-        self.knowledge_engine = (
-            KnowledgeEngine()
-        )
-
-        ################################
-
-        self.normal.register(
-            DNSEngine()
-        )
-
-        self.normal.register(
             HeaderEngine()
+
         )
 
-        self.normal.register(
+        self.registry.register(
+
             CookieEngine()
+
         )
 
-        self.normal.register(
-            TLSEngine()
-        )
+        self.registry.register(
 
-        self.normal.register(
-            CMSEngine()
-        )
-
-        self.normal.register(
-            FrameworkEngine()
-        )
-
-        self.normal.register(
             MetadataEngine()
+
         )
 
-        ################################
+        self.registry.register(
 
-        self.deep.register(
-            WAFEngine()
-        )
-
-        self.deep.register(
-            RobotsEngine()
-        )
-
-        self.deep.register(
-            SitemapEngine()
-        )
-
-        self.deep.register(
             SecurityHeadersEngine()
+
         )
-
-        self.deep.register(JSEngine())
-
-    def scan(
-            self,
-            target,
-            deep=False
-            ):
-
-        results = {}
-
-        results["target"] = target
-
-        results["mode"] = (
-            "deep"
-            if deep
-            else
-            "normal"
+        self.registry.register(
+            TechnologyEngine()
             )
-
-        ################################
-
-        print("[*] Running Normal Engines")
-
-        normal = (
-            self.normal.run(target)
-        )
-        results.update(normal)
-        ################################
-
-        if deep:
-            print()
-            print("[*] Deep Mode")
-
-            deep_results = (
-                self.deep.run(target)
-            )
-
-            results["deep"] = deep_results
-
-        results["adapters"] = (
-            self.adapters.run(target)
-            )
-
-        ################################
-
-        results[
-            "technologies"
-            ] = (
-
-    self.correlation.analyze(
-        results
-        )
-        )
-
-        results["knowledge"] = self.knowledge_engine.run(results)
-
-        results["versions"] = (
-            self.version_engine.run(
-                results
-                )
-                )
         
-        self.reporter.save(
-            target,
-            results
-        )
-        return results
+        self.registry.register(
+            FrameworkEngine()
+            )
+        
+        self.registry.register(
+            VersionEngine()
+            )
+        
+        self.registry.register(
+            FingerprintEngine()
+            )
+
+        self.registry.register(
+            KnowledgeEngine()
+            )
+        
+        self.registry.register(
+            EndpointEngine()
+            )
+
+        self.registry.register(
+            FormEngine()
+            )
+
+        self.registry.register(
+            CommentEngine()
+            )
+
+        self.registry.register(
+            EmailEngine()
+            )
+
+        self.registry.register(
+            EvidenceEngine()
+            )
+
+    def scan(self, target, deep=False):
+
+        context = ScanContext(target)
+
+        self.registry.run(context)
+
+        return context.results

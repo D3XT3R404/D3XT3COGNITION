@@ -1,144 +1,46 @@
 import re
 
+from dexter.core.base_engine import BaseEngine
 
-class VersionEngine:
 
-    name = "version"
+class VersionEngine(BaseEngine):
 
-    def detect_server(
+    name = "versions"
 
-            self,
+    def run(self, context):
 
-            headers
+        versions = {}
 
-    ):
+        server = context.headers.get("Server", "")
 
-        server = headers.get(
-
-            "server",
-
-            ""
-
-        )
+        powered = context.headers.get("X-Powered-By", "")
 
         m = re.search(
 
-            r'([A-Za-z]+)/([\d\.]+)',
+            r"(Apache|nginx|OpenResty)[/ ]([\d\.]+)",
 
-            server
+            server,
+
+            re.I
 
         )
 
         if m:
 
-            return {
+            versions[m.group(1)] = m.group(2)
 
-                "name":
+        php = re.search(
 
-                    m.group(1),
+            r"PHP[/ ]([\d\.]+)",
 
-                "version":
+            powered,
 
-                    m.group(2)
-
-            }
-
-        return None
-
-
-    def detect_generator(
-
-            self,
-
-            metadata
-
-    ):
-
-        generator = metadata.get(
-
-            "generator",
-
-            ""
+            re.I
 
         )
 
-        m = re.search(
+        if php:
 
-            r'([A-Za-z]+)\s([\d\.]+)',
-
-            generator
-
-        )
-
-        if m:
-
-            return {
-
-                "name":
-
-                    m.group(1),
-
-                "version":
-
-                    m.group(2)
-
-            }
-
-        return None
-
-
-    def run(
-
-            self,
-
-            findings
-
-    ):
-
-        versions = []
-
-        headers = findings.get(
-
-            "headers",
-
-            {}
-
-        )
-
-        metadata = findings.get(
-
-            "metadata",
-
-            {}
-
-        )
-
-        server = self.detect_server(
-
-            headers
-
-        )
-
-        if server:
-
-            versions.append(
-
-                server
-
-            )
-
-        gen = self.detect_generator(
-
-            metadata
-
-        )
-
-        if gen:
-
-            versions.append(
-
-                gen
-
-            )
+            versions["PHP"] = php.group(1)
 
         return versions

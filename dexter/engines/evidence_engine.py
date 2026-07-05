@@ -1,49 +1,58 @@
-class EvidenceEngine:
+from dexter.core.base_engine import BaseEngine
 
-    def __init__(
 
-            self
+class EvidenceEngine(BaseEngine):
 
-    ):
+    name = "evidence"
 
-        self.data = []
+    def run(self, context):
 
-    def add(
+        evidence = []
 
-            self,
+        headers = context.headers
 
-            technology,
+        if "Server" in headers:
 
-            source,
+            evidence.append({
 
-            value
+                "engine": "header",
 
-    ):
+                "type": "server",
 
-        self.data.append(
+                "value": headers["Server"],
 
-            {
+                "confidence": 40
 
-                "technology":
+            })
 
-                    technology,
+        if "X-Powered-By" in headers:
 
-                "source":
+            evidence.append({
 
-                    source,
+                "engine": "header",
 
-                "value":
+                "type": "powered",
 
-                    value
+                "value": headers["X-Powered-By"],
 
-            }
+                "confidence": 30
 
-        )
+            })
 
-    def export(
+        for cookie in context.cookies:
 
-            self
+            evidence.append({
 
-    ):
+                "engine": "cookie",
 
-        return self.data
+                "type": "cookie",
+
+                "value": cookie,
+
+                "confidence": 20
+
+            })
+
+        context.evidence = evidence
+
+        return evidence

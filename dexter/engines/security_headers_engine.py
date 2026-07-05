@@ -1,62 +1,42 @@
-import requests
-
-from dexter.core.base_engine import (
-
-    BaseEngine
-
-)
+from dexter.core.base_engine import BaseEngine
 
 
-class SecurityHeadersEngine(
-
-    BaseEngine
-
-):
+class SecurityHeadersEngine(BaseEngine):
 
     name = "security_headers"
 
-    def run(
+    SECURITY_HEADERS = [
 
-            self,
+        "Content-Security-Policy",
 
-            target
+        "Strict-Transport-Security",
 
-    ):
+        "X-Frame-Options",
 
-        findings = {}
+        "X-Content-Type-Options",
 
-        headers = [
+        "Referrer-Policy",
 
-            "Content-Security-Policy",
+        "Permissions-Policy"
 
-            "Strict-Transport-Security",
+    ]
 
-            "X-Frame-Options",
+    def run(self, context):
 
-            "X-Content-Type-Options"
+        if context.response is None:
 
-        ]
+            return {}
 
-        try:
+        headers = {}
 
-            r = requests.get(
+        for header in self.SECURITY_HEADERS:
 
-                f"https://{target}",
+            headers[header] = context.response.headers.get(
 
-                timeout=10
+                header,
+
+                "Missing"
 
             )
 
-            for h in headers:
-
-                findings[h] = (
-
-                    h in r.headers
-
-                )
-
-        except:
-
-            pass
-
-        return findings
+        return headers

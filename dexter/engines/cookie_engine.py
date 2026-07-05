@@ -1,36 +1,22 @@
-import requests
+from dexter.core.base_engine import BaseEngine
 
 
-class CookieEngine:
+class CookieEngine(BaseEngine):
 
-    def run(
+    name = "cookies"
 
-            self,
+    def run(self, context):
 
-            url
+        if context.response is None:
 
-    ):
+            return {}
 
-        try:
+        cookies = {}
 
-            r = requests.get(
+        for cookie in context.response.cookies:
 
-                url,
+            cookies[cookie.name] = cookie.value
 
-                timeout=10
+        context.cookies = cookies
 
-            )
-
-            return [
-
-                cookie.name
-
-                for cookie
-
-                in r.cookies
-
-            ]
-
-        except:
-
-            return []
+        return cookies

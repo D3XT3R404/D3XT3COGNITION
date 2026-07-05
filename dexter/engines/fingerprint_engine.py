@@ -1,32 +1,48 @@
-from dexter.core.fingerprint_loader import (
-
-    FingerprintLoader
-
-)
+from dexter.core.base_engine import BaseEngine
+from dexter.core.fingerprint_loader import FingerprintLoader
 
 
-class FingerprintEngine:
+class FingerprintEngine(BaseEngine):
 
-    def __init__(self):
+    name = "fingerprints"
 
-        self.loader = (
+    def run(self, context):
 
-            FingerprintLoader()
+        loader = FingerprintLoader()
 
-        )
+        fps = loader.load()
 
-    def cms(self):
+        html = ""
 
-        return self.loader.load(
+        if context.response:
+            html = context.response.text.lower()
 
-            "cms"
+        found = []
 
-        )
+        for fp in fps:
 
-    def frameworks(self):
+            if not fp:
+                continue
 
-        return self.loader.load(
+            keywords = fp.get(
+                "keywords",
+                []
+            )
 
-            "frameworks"
+            for keyword in keywords:
+
+                if keyword.lower() in html:
+
+                    found.append(
+
+                        fp["name"]
+
+                    )
+
+                    break
+
+        return sorted(
+
+            set(found)
 
         )
