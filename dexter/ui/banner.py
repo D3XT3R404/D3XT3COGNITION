@@ -1,22 +1,22 @@
+from rich.console import Console
 from rich.panel import Panel
+from rich.text import Text
 
-from dexter.ui.console import console
+console = Console()
 
 
-def banner():
+def render_banner(version: str = "v0.1"):
 
-    panel = Panel(
-
-        "[bold cyan]D3XT3COGNITION[/bold cyan]\n"
-
-        "Deep Reconnaissance Framework",
-
-        expand=False
-
-    )
+    title = Text()
+    title.append("DEXTER", style="bold cyan")
+    title.append(f"  {version}\n", style="bold white")
+    title.append("D3XT3COGNITION\n", style="bold magenta")
+    title.append("Deep Website Information Gathering Framework", style="bold green")
 
     console.print(
-
-        panel
-
+        Panel(
+            title,
+            border_style="cyan",
+            padding=(1, 4),
+        )
     )

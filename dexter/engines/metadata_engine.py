@@ -1,64 +1,34 @@
 from bs4 import BeautifulSoup
+import requests
 
 from dexter.core.base_engine import BaseEngine
 
 
 class MetadataEngine(BaseEngine):
 
-    name = "metadata"
+    def run(self, target):
+        data = {}
 
-    def run(self, context):
+        try:
+            response = requests.get(target, timeout=10, allow_redirects=True)
+            soup = BeautifulSoup(response.text, "html.parser")
 
-        if context.response is None:
+            title = ""
+            if soup.title and soup.title.text:
+                title = soup.title.text.strip()
 
-            return {}
+            metas = {}
+            for meta in soup.find_all("meta"):
+                key = meta.get("name") or meta.get("property")
+                value = meta.get("content")
+                if key and value:
+                    metas[key] = value
 
-        soup = BeautifulSoup(
+            data = {
+                "title": title,
+                "meta": metas,
+            }
+        except Exception:
+            pass
 
-            context.response.text,
-
-            "html.parser"
-
-        )
-
-        title = ""
-
-        if soup.title:
-
-            title = soup.title.text.strip()
-
-        metas = {}
-
-        for meta in soup.find_all("meta"):
-
-            key = meta.get(
-
-                "name"
-
-            ) or meta.get(
-
-                "property"
-
-            )
-
-            value = meta.get(
-
-                "content"
-
-            )
-
-            if key and value:
-
-                metas[key] = value
-
-        result = {
-
-            "title": title,
-
-            "meta": metas
-
-        }
-
-        context.metadata = result
-
-        return result
+        return data

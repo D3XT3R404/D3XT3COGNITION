@@ -3,47 +3,37 @@ import requests
 
 class ScanContext:
 
-    def __init__(self, target: str):
+    def __init__(self, target: str, deep: bool = False):
 
         if not target.startswith(("http://", "https://")):
             target = "https://" + target
 
         self.target = target
+        self.deep = deep
 
         self.session = requests.Session()
 
         self.response = None
-
         self.results = {}
 
         self.technologies = []
-
         self.evidence = []
-
         self.headers = {}
-
         self.cookies = {}
-
         self.metadata = {}
-
         self.framework = None
-
         self.cms = None
-
-        self.errors = []
-
-        self.evidence = []
-
-        self.endpoints = []
-
+        self.wordpress = {}
+        self.confidence = {}
+        self.dns = {}
+        self.tls = {}
+        self.robots = {}
+        self.sitemap = []
         self.javascript = []
-
         self.assets = []
-
-        self.emails = []
-
-        self.comments = []
-
+        self.endpoints = []
         self.forms = []
-
+        self.comments = []
+        self.emails = []
         self.interesting = []
+        self.errors = []

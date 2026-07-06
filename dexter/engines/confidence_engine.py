@@ -1,45 +1,11 @@
-class EvidenceEngine:
+from dexter.core.base_engine import BaseEngine
 
-    def __init__(self):
 
-        self.evidence = []
+class ConfidenceEngine(BaseEngine):
 
-    def add(
+    def run(self, target):
+        scores = {}
 
-            self,
-
-            technology,
-
-            source,
-
-            value
-
-    ):
-
-        self.evidence.append(
-
-            {
-
-                "technology":
-
-                    technology,
-
-                "source":
-
-                    source,
-
-                "value":
-
-                    value
-
-            }
-
-        )
-
-    def get(
-
-            self
-
-    ):
-
-        return self.evidence
+        if isinstance(target, dict):
+            scores["raw"] = 0
+        return scores

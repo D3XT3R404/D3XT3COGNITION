@@ -1,67 +1,24 @@
 import requests
 
+from dexter.core.base_engine import BaseEngine
 
-class CMSEngine:
+
+class CmsEngine(BaseEngine):
 
     def run(self, target):
-
-        findings = []
-
-        confidence = {}
+        cms = None
 
         try:
+            response = requests.get(target, timeout=10, allow_redirects=True)
+            html = response.text.lower()
 
-            url = f"https://{target}"
-
-            r = requests.get(
-                url,
-                timeout=10
-            )
-
-            html = r.text.lower()
-
-            if "wp-content" in html:
-
-                findings.append(
-                    "WordPress"
-                )
-
-                confidence[
-                    "WordPress"
-                ] = 95
-
-            if "__next" in html:
-
-                findings.append(
-                    "NextJS"
-                )
-
-                confidence[
-                    "NextJS"
-                ] = 90
-
-            if "drupal-settings-json" in html:
-
-                findings.append(
-                    "Drupal"
-                )
-
-                confidence[
-                    "Drupal"
-                ] = 90
-
-        except:
-
+            if "wp-content" in html or "wp-includes" in html:
+                cms = "WordPress"
+            elif "joomla" in html:
+                cms = "Joomla"
+            elif "drupal" in html or "/sites/default/" in html:
+                cms = "Drupal"
+        except Exception:
             pass
 
-        return {
-
-            "detected":
-
-                findings,
-
-            "confidence":
-
-                confidence
-
-        }
+        return cms

@@ -1,106 +1,27 @@
 import socket
-
 import ssl
 
-from dexter.core.base_engine import (
-
-    BaseEngine
-
-)
+from dexter.core.base_engine import BaseEngine
 
 
-class TLSEngine(
+class TlsEngine(BaseEngine):
 
-    BaseEngine
-
-):
-
-    name = "tls"
-
-    def run(
-
-            self,
-
-            target
-
-    ):
-
+    def run(self, target):
         data = {}
 
         try:
+            host = target.replace("https://", "").replace("http://", "").split("/")[0]
+            ctx = ssl.create_default_context()
 
-            context = (
+            with socket.create_connection((host, 443), timeout=10) as sock:
+                with ctx.wrap_socket(sock, server_hostname=host) as ssock:
+                    cert = ssock.getpeercert() or {}
 
-                ssl.create_default_context()
-
-            )
-
-            with socket.create_connection(
-
-                    (
-
-                        target,
-
-                        443
-
-                    ),
-
-                    timeout=10
-
-            ) as sock:
-
-                with context.wrap_socket(
-
-                        sock,
-
-                        server_hostname=target
-
-                ) as ssock:
-
-                    cert = (
-
-                        ssock.getpeercert()
-
-                    )
-
-                    data["version"] = (
-
-                        ssock.version()
-
-                    )
-
-                    data["cipher"] = (
-
-                        ssock.cipher()
-
-                    )
-
-                    data["issuer"] = (
-
-                        cert.get(
-
-                            "issuer",
-
-                            []
-
-                        )
-
-                    )
-
-                    data["subject"] = (
-
-                        cert.get(
-
-                            "subject",
-
-                            []
-
-                        )
-
-                    )
-
-        except:
-
+                    data["version"] = ssock.version()
+                    data["cipher"] = ssock.cipher()
+                    data["issuer"] = cert.get("issuer", [])
+                    data["subject"] = cert.get("subject", [])
+        except Exception:
             pass
 
         return data

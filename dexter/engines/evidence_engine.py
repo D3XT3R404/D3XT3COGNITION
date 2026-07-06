@@ -1,58 +1,42 @@
 from dexter.core.base_engine import BaseEngine
+import requests
 
 
 class EvidenceEngine(BaseEngine):
 
-    name = "evidence"
-
-    def run(self, context):
-
+    def run(self, target):
         evidence = []
 
-        headers = context.headers
+        try:
+            response = requests.get(target, timeout=10, allow_redirects=True)
 
-        if "Server" in headers:
+            server = response.headers.get("Server")
+            powered = response.headers.get("X-Powered-By")
 
-            evidence.append({
+            if server:
+                evidence.append({
+                    "engine": "header",
+                    "type": "server",
+                    "value": server,
+                    "confidence": 40,
+                })
 
-                "engine": "header",
+            if powered:
+                evidence.append({
+                    "engine": "header",
+                    "type": "powered",
+                    "value": powered,
+                    "confidence": 30,
+                })
 
-                "type": "server",
-
-                "value": headers["Server"],
-
-                "confidence": 40
-
-            })
-
-        if "X-Powered-By" in headers:
-
-            evidence.append({
-
-                "engine": "header",
-
-                "type": "powered",
-
-                "value": headers["X-Powered-By"],
-
-                "confidence": 30
-
-            })
-
-        for cookie in context.cookies:
-
-            evidence.append({
-
-                "engine": "cookie",
-
-                "type": "cookie",
-
-                "value": cookie,
-
-                "confidence": 20
-
-            })
-
-        context.evidence = evidence
+            for cookie in response.cookies:
+                evidence.append({
+                    "engine": "cookie",
+                    "type": "cookie",
+                    "value": f"{cookie.name}={cookie.value}",
+                    "confidence": 20,
+                })
+        except Exception:
+            pass
 
         return evidence

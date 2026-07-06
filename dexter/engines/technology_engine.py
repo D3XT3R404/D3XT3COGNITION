@@ -1,70 +1,58 @@
+import requests
+
 from dexter.core.base_engine import BaseEngine
 
 
 class TechnologyEngine(BaseEngine):
-
-    name = "technology"
 
     SERVER_MAP = {
         "apache": "Apache",
         "nginx": "Nginx",
         "iis": "Microsoft IIS",
         "openresty": "OpenResty",
-        "cloudflare": "Cloudflare"
+        "cloudflare": "Cloudflare",
     }
 
-    def run(self, context):
-
+    def run(self, target):
         technologies = []
 
-        headers = context.headers
+        try:
+            response = requests.get(target, timeout=10, allow_redirects=True)
+            headers = response.headers
+            server = headers.get("Server", "").lower()
+            powered = headers.get("X-Powered-By", "").lower()
+            html = response.text.lower()
 
-        server = headers.get("Server", "").lower()
+            for key, value in self.SERVER_MAP.items():
+                if key in server:
+                    technologies.append(value)
 
-        powered = headers.get("X-Powered-By", "").lower()
+            if "php" in powered:
+                technologies.append("PHP")
+            if "asp.net" in powered:
+                technologies.append("ASP.NET")
+            if "express" in powered:
+                technologies.append("Express")
 
-        for key, value in self.SERVER_MAP.items():
+            if "wp-content" in html or "wp-includes" in html:
+                technologies.append("WordPress")
+            if "drupal" in html or "/sites/default/" in html:
+                technologies.append("Drupal")
+            if "joomla" in html:
+                technologies.append("Joomla")
+            if "bootstrap" in html:
+                technologies.append("Bootstrap")
+            if "jquery" in html:
+                technologies.append("jQuery")
+            if "vue" in html:
+                technologies.append("Vue.js")
+            if "react" in html:
+                technologies.append("React")
+            if "alpine" in html:
+                technologies.append("Alpine.js")
+            if "livewire" in html:
+                technologies.append("Livewire")
+        except Exception:
+            pass
 
-            if key in server:
-                technologies.append(value)
-
-        if "php" in powered:
-            technologies.append("PHP")
-
-        if "asp.net" in powered:
-            technologies.append("ASP.NET")
-
-        if "express" in powered:
-            technologies.append("Express")
-
-        html = ""
-
-        if context.response:
-            html = context.response.text.lower()
-
-        if "wp-content" in html:
-            technologies.append("WordPress")
-
-        if "/sites/default/" in html:
-            technologies.append("Drupal")
-
-        if "cdn.jsdelivr.net" in html:
-            technologies.append("jsDelivr")
-
-        if "bootstrap" in html:
-            technologies.append("Bootstrap")
-
-        if "jquery" in html:
-            technologies.append("jQuery")
-
-        if "vue" in html:
-            technologies.append("Vue.js")
-
-        if "react" in html:
-            technologies.append("React")
-
-        technologies = sorted(set(technologies))
-
-        context.technologies = technologies
-
-        return technologies
+        return sorted(set(technologies))

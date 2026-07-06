@@ -5,26 +5,13 @@ from dexter.core.base_engine import BaseEngine
 
 class HeaderEngine(BaseEngine):
 
-    name = "headers"
+    def run(self, target):
+        data = {}
 
-    def run(self, context):
+        try:
+            response = requests.get(target, timeout=10, allow_redirects=True)
+            data = dict(response.headers)
+        except Exception:
+            pass
 
-        response = requests.get(
-
-            context.target,
-
-            timeout=10,
-
-            allow_redirects=True
-
-        )
-
-        context.response = response
-
-        context.headers = dict(
-
-            response.headers
-
-        )
-
-        return context.headers
+        return data

@@ -1,42 +1,18 @@
 import socket
 
-from dexter.core.base_engine import (
-
-    BaseEngine
-
-)
+from dexter.core.base_engine import BaseEngine
 
 
-class DNSEngine(
+class DnsEngine(BaseEngine):
 
-    BaseEngine
-
-):
-
-    name = "dns"
-
-    def run(
-
-            self,
-
-            target
-
-    ):
-
+    def run(self, target):
         data = {}
 
         try:
-
-            ip = socket.gethostbyname(
-
-                target
-
-            )
-
+            host = target.replace("https://", "").replace("http://", "").split("/")[0]
+            ip = socket.gethostbyname(host)
             data["ip"] = ip
-
-        except:
-
+        except Exception:
             pass
 
         return data

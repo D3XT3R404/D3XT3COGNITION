@@ -1,54 +1,24 @@
 import requests
 
-from dexter.core.base_engine import (
-
-    BaseEngine
-
-)
+from dexter.core.base_engine import BaseEngine
 
 
-class SitemapEngine(
+class SitemapEngine(BaseEngine):
 
-    BaseEngine
-
-):
-
-    name = "sitemap"
-
-    def run(
-
-            self,
-
-            target
-
-    ):
-
-        data = {}
+    def run(self, target):
+        data = []
 
         try:
+            base = target.rstrip("/")
+            url = base + "/sitemap.xml"
+            response = requests.get(url, timeout=10, allow_redirects=True)
 
-            r = requests.get(
-
-                f"https://{target}/sitemap.xml",
-
-                timeout=10
-
-            )
-
-            data["status"] = (
-
-                r.status_code
-
-            )
-
-            data["found"] = (
-
-                r.status_code == 200
-
-            )
-
-        except:
-
+            if response.status_code == 200:
+                data.append({
+                    "url": url,
+                    "content": response.text,
+                })
+        except Exception:
             pass
 
         return data

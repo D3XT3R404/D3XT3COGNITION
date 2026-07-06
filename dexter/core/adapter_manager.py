@@ -1,83 +1,47 @@
-from dexter.adapters.wpscan_adapter import (
-
-    WPScanAdapter
-
-)
-
-from dexter.adapters.whatweb_adapter import (
-
-    WhatWebAdapter
-
-)
-
-from dexter.adapters.httpx_adapter import (
-
-    HTTPXAdapter
-
-)
-from dexter.adapters.katana_adapter import (
-
-    KatanaAdapter
-
-)
-
-from dexter.adapters.wafw00f_adapter import (
-
-    WAFW00FAdapter
-
-)
-
-from dexter.adapters.subfinder_adapter import (
-
-    SubfinderAdapter
-
-)
-
-
 class AdapterManager:
+    def __init__(self):
+        self.adapters = []
 
-    def __init__(
+    def register(self, adapter):
+        self.adapters.append(adapter)
 
-            self
-
-    ):
-    
-        self.adapters = [
-
-    WPScanAdapter(),
-
-    WhatWebAdapter(),
-
-    HTTPXAdapter(),
-
-    KatanaAdapter(),
-
-    WAFW00FAdapter(),
-
-    SubfinderAdapter()
-
-]
-
-    def run(
-
-            self,
-
-            target
-
-    ):
-
-        data = {}
+    def run_all(self, target, results=None):
+        collected = []
 
         for adapter in self.adapters:
+            if not adapter.available():
+                continue
 
-            data[
+            if adapter.name == "wpscan":
+                wp_detected = False
 
-                adapter.name
+                if isinstance(results, dict):
+                    wordpress = results.get("wordpress", {})
+                    cms = results.get("cms")
+                    technologies = results.get("technology", [])
 
-            ] = adapter.run(
+                    if isinstance(wordpress, dict) and wordpress.get("detected"):
+                        wp_detected = True
+                    elif cms == "WordPress":
+                        wp_detected = True
+                    elif "WordPress" in technologies:
+                        wp_detected = True
 
-                target
+                if not wp_detected:
+                    continue
 
-            )
+            try:
+                data = adapter.execute(target, results=results)
+                collected.append({
+                    "adapter": adapter.name,
+                    "data": data,
+                })
+            except Exception as e:
+                collected.append({
+                    "adapter": adapter.name,
+                    "data": {
+                        "error": str(e)
+                    }
+                })
 
-        return data
+        return collected

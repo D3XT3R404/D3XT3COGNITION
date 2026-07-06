@@ -1,22 +1,19 @@
+import requests
+
 from dexter.core.base_engine import BaseEngine
 
 
 class CookieEngine(BaseEngine):
 
-    name = "cookies"
+    def run(self, target):
+        data = {}
 
-    def run(self, context):
+        try:
+            response = requests.get(target, timeout=10, allow_redirects=True)
 
-        if context.response is None:
+            for cookie in response.cookies:
+                data[cookie.name] = cookie.value
+        except Exception:
+            pass
 
-            return {}
-
-        cookies = {}
-
-        for cookie in context.response.cookies:
-
-            cookies[cookie.name] = cookie.value
-
-        context.cookies = cookies
-
-        return cookies
+        return data

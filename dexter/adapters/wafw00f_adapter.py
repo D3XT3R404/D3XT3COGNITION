@@ -1,62 +1,49 @@
-import shutil
+import subprocess
 
-from dexter.adapters.base_adapter import (
-
-    BaseAdapter
-
-)
+from dexter.adapters.base_adapter import BaseAdapter
 
 
-class WAFW00FAdapter(
+class Wafw00fAdapter(BaseAdapter):
+    binary = "wafw00f"
 
-    BaseAdapter
-
-):
-
-    name = "wafw00f"
-
-    background = True
-
-    def available(
-
-            self
-
-    ):
-
-        return (
-
-            shutil.which(
-
-                "wafw00f"
-
-            )
-
-            is not None
-
-        )
-
-    def run(
-
-            self,
-
-            target
-
-    ):
+    def execute(self, target, results=None):
+        output = {
+            "source": "wafw00f",
+            "waf": None,
+            "raw": "",
+            "error": None,
+        }
 
         if not self.available():
+            output["error"] = "wafw00f binary not found"
+            return output
 
-            return {
+        try:
+            cmd = [
+                self.binary,
+                "--no-color",
+                target,
+            ]
 
-                "installed":
+            proc = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=180,
+            )
 
-                    False
+            raw = (proc.stdout or "") + "\n" + (proc.stderr or "")
+            output["raw"] = raw.strip()
 
-            }
+            waf = None
+            for line in raw.splitlines():
+                low = line.lower()
+                if "waf" in low and "is" in low:
+                    waf = line.strip()
 
-        return {
+            output["waf"] = waf
 
-            "installed":
+        except Exception as e:
+            output["error"] = str(e)
 
-                True
-
-        }
+        return output

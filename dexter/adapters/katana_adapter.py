@@ -1,58 +1,58 @@
-import shutil
+import json
+import subprocess
 
-from dexter.adapters.base_adapter import (BaseAdapter)
 from dexter.adapters.base_adapter import BaseAdapter
 
+
 class KatanaAdapter(BaseAdapter):
+    binary = "katana"
 
-    name = "katana"
-
-    background = True
-
-    def available(
-
-            self
-
-    ):
-
-        return (
-
-            shutil.which(
-
-                "katana"
-
-            )
-
-            is not None
-
-        )
-
-    def run(
-
-            self,
-
-            target
-
-    ):
+    def execute(self, target, results=None):
+        output = {
+            "source": "katana",
+            "urls": [],
+            "raw": "",
+            "error": None,
+        }
 
         if not self.available():
+            output["error"] = "katana binary not found"
+            return output
 
-            return {
+        try:
+            cmd = [
+                self.binary,
+                "-u",
+                target,
+                "-json",
+                "-silent",
+                "-d",
+                "3",
+            ]
 
-                "installed":
+            proc = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=300,
+            )
 
-                    False
+            raw = (proc.stdout or "").strip()
+            output["raw"] = raw
 
-            }
+            urls = []
+            for line in raw.splitlines():
+                try:
+                    item = json.loads(line)
+                    url = item.get("url") or item.get("request")
+                    if url:
+                        urls.append(url)
+                except Exception:
+                    continue
 
-        return {
+            output["urls"] = sorted(set(urls))
 
-            "installed":
+        except Exception as e:
+            output["error"] = str(e)
 
-                True,
-
-            "status":
-
-                "stub"
-
-        }
+        return output

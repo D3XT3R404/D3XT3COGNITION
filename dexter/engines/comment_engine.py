@@ -1,70 +1,41 @@
 import re
+import requests
 
 from dexter.core.base_engine import BaseEngine
 
 
 class CommentEngine(BaseEngine):
 
-    name = "comments"
-
-    def run(self, context):
-
-        if context.response is None:
-
-            return []
-
-        html = context.response.text
-
-        comments = re.findall(
-
-            r"<!--(.*?)-->",
-
-            html,
-
-            re.S
-
-        )
-
+    def run(self, target):
         result = []
 
-        keywords = [
+        try:
+            response = requests.get(target, timeout=10, allow_redirects=True)
+            html = response.text
 
-            "todo",
+            comments = re.findall(r"<!--(.*?)-->", html, re.S)
 
-            "fixme",
+            keywords = [
+                "todo",
+                "fixme",
+                "password",
+                "admin",
+                "secret",
+                "debug",
+                "staging",
+                "internal",
+                "api",
+                "token",
+            ]
 
-            "password",
-
-            "admin",
-
-            "secret",
-
-            "debug",
-
-            "staging",
-
-            "internal",
-
-            "api",
-
-            "token"
-
-        ]
-
-        for comment in comments:
-
-            for keyword in keywords:
-
-                if keyword.lower() in comment.lower():
-
-                    result.append({
-
-                        "keyword": keyword,
-
-                        "comment": comment.strip()
-
-                    })
-
-        context.comments = result
+            for comment in comments:
+                for keyword in keywords:
+                    if keyword.lower() in comment.lower():
+                        result.append({
+                            "keyword": keyword,
+                            "comment": comment.strip(),
+                        })
+        except Exception:
+            pass
 
         return result

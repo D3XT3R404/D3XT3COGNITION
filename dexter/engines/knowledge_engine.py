@@ -6,68 +6,49 @@ from dexter.core.base_engine import BaseEngine
 
 class KnowledgeEngine(BaseEngine):
 
-    name = "knowledge"
-
-    def run(self, context):
-
-        base = os.path.join(
-
+    def _load_db(self, software):
+        base_dir = os.path.join(
             os.path.dirname(__file__),
-
             "..",
-
             "knowledge",
-
-            "software"
-
+            "software",
         )
 
-        results = []
+        path = os.path.join(base_dir, f"{software.lower()}.yaml")
+        if not os.path.exists(path):
+            return None
 
-        versions = context.results.get(
+        try:
+            with open(path, encoding="utf-8") as f:
+                return yaml.safe_load(f)
+        except Exception:
+            return None
 
-            "versions",
+    def run(self, target):
+        results = {}
 
-            {}
+        try:
+            if isinstance(target, dict):
+                versions = target.get("versions", {})
+            else:
+                versions = {}
+        except Exception:
+            versions = {}
 
-        )
+        if not isinstance(versions, dict):
+            return []
 
-        for software in versions:
+        output = []
 
-            file = os.path.join(
-
-                base,
-
-                software.lower() + ".yaml"
-
-            )
-
-            if not os.path.exists(file):
-
+        for software, version in versions.items():
+            db = self._load_db(software)
+            if not db:
                 continue
 
-            with open(
+            output.append({
+                "software": software,
+                "version": version,
+                "knowledge": db,
+            })
 
-                file,
-
-                encoding="utf-8"
-
-            ) as f:
-
-                db = yaml.safe_load(f)
-
-            results.append(
-
-                {
-
-                    "software": software,
-
-                    "version": versions[software],
-
-                    "knowledge": db
-
-                }
-
-            )
-
-        return results
+        return output

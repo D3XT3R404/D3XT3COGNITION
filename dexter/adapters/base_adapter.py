@@ -1,22 +1,19 @@
 from abc import ABC, abstractmethod
+from shutil import which
 
 
 class BaseAdapter(ABC):
+    binary = None
 
-    name = "base"
+    @property
+    def name(self):
+        return self.__class__.__name__.replace("Adapter", "").lower()
 
-    background = True
+    def available(self):
+        if not self.binary:
+            return True
+        return which(self.binary) is not None
 
     @abstractmethod
-    def available(self) -> bool:
-        """
-        Check whether the external tool exists.
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    def run(self, target: str) -> dict:
-        """
-        Execute adapter scan.
-        """
+    def execute(self, target, results=None):
         raise NotImplementedError

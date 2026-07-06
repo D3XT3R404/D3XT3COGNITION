@@ -1,62 +1,52 @@
-import shutil
+import subprocess
 
-from dexter.adapters.base_adapter import (
-
-    BaseAdapter
-
-)
+from dexter.adapters.base_adapter import BaseAdapter
 
 
-class SubfinderAdapter(
+class SubfinderAdapter(BaseAdapter):
+    binary = "subfinder"
 
-    BaseAdapter
-
-):
-
-    name = "subfinder"
-
-    background = True
-
-    def available(
-
-            self
-
-    ):
-
-        return (
-
-            shutil.which(
-
-                "subfinder"
-
-            )
-
-            is not None
-
-        )
-
-    def run(
-
-            self,
-
-            target
-
-    ):
+    def execute(self, target, results=None):
+        output = {
+            "source": "subfinder",
+            "subdomains": [],
+            "raw": "",
+            "error": None,
+        }
 
         if not self.available():
+            output["error"] = "subfinder binary not found"
+            return output
 
-            return {
+        try:
+            host = target.replace("https://", "").replace("http://", "").split("/")[0]
 
-                "installed":
+            cmd = [
+                self.binary,
+                "-d",
+                host,
+                "-silent",
+            ]
 
-                    False
+            proc = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=300,
+            )
 
-            }
+            raw = (proc.stdout or "").strip()
+            output["raw"] = raw
 
-        return {
+            subs = []
+            for line in raw.splitlines():
+                line = line.strip()
+                if line:
+                    subs.append(line)
 
-            "installed":
+            output["subdomains"] = sorted(set(subs))
 
-                True
+        except Exception as e:
+            output["error"] = str(e)
 
-        }
+        return output

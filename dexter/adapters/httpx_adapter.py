@@ -1,53 +1,62 @@
-import shutil
+import json
+import subprocess
 
-from dexter.adapters.base_adapter import (
-    BaseAdapter
-)
+from dexter.adapters.base_adapter import BaseAdapter
 
-class HTTPXAdapter(
-    BaseAdapter
-):
-    name = "httpx"
-    background = True
 
-    def available(
-            self
-            ):
+class HttpxAdapter(BaseAdapter):
+    binary = "httpx"
 
-        return (
-
-            shutil.which(
-
-                "httpx"
-
-            )
-
-            is not None
-
-        )
-
-    def run(
-
-            self,
-
-            target
-
-    ):
+    def execute(self, target, results=None):
+        output = {
+            "source": "httpx",
+            "raw": "",
+            "parsed": [],
+            "error": None,
+        }
 
         if not self.available():
+            output["error"] = "httpx binary not found"
+            return output
 
-            return {
+        try:
+            cmd = [
+                self.binary,
+                "-json",
+                "-title",
+                "-tech-detect",
+                "-status-code",
+                "-follow-redirects",
+                "-silent",
+                "-u",
+                target,
+            ]
 
-                "installed":
+            proc = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=180,
+            )
 
-                    False
+            raw = (proc.stdout or "").strip()
+            output["raw"] = raw
 
-            }
+            if proc.returncode != 0 and not raw:
+                output["error"] = f"httpx exited with code {proc.returncode}"
+                return output
 
-        return {
+            parsed = []
+            for line in raw.splitlines():
+                try:
+                    item = json.loads(line)
+                    parsed.append(item)
+                except Exception:
+                    continue
 
-            "installed":
+            output["parsed"] = parsed
 
-                True
+        except Exception as e:
+            output["error"] = str(e)
 
-        }
+        return output

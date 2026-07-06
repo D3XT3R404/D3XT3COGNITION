@@ -1,92 +1,24 @@
+from bs4 import BeautifulSoup
+from urllib.parse import urljoin
 import requests
 
-from bs4 import BeautifulSoup
-
-from dexter.core.base_engine import (
-
-    BaseEngine
-
-)
+from dexter.core.base_engine import BaseEngine
 
 
-class JSEngine(
+class JsEngine(BaseEngine):
 
-    BaseEngine
-
-):
-
-    name = "javascript"
-
-    def run(
-
-            self,
-
-            target
-
-    ):
-
-        libraries = []
+    def run(self, target):
+        scripts = []
 
         try:
+            response = requests.get(target, timeout=10, allow_redirects=True)
+            soup = BeautifulSoup(response.text, "html.parser")
 
-            r = requests.get(
-
-                f"https://{target}",
-
-                timeout=10
-
-            )
-
-            soup = BeautifulSoup(
-
-                r.text,
-
-                "html.parser"
-
-            )
-
-            scripts = soup.find_all(
-
-                "script"
-
-            )
-
-            for script in scripts:
-
-                src = script.get(
-
-                    "src",
-
-                    ""
-
-                ).lower()
-
-                if "jquery" in src:
-
-                    libraries.append(
-
-                        "jQuery"
-
-                    )
-
-                if "bootstrap" in src:
-
-                    libraries.append(
-
-                        "Bootstrap"
-
-                    )
-
-        except:
-
+            for script in soup.find_all("script"):
+                src = script.get("src")
+                if src:
+                    scripts.append(urljoin(target, src))
+        except Exception:
             pass
 
-        return list(
-
-            set(
-
-                libraries
-
-            )
-
-        )
+        return sorted(set(scripts))

@@ -1,54 +1,22 @@
 import requests
 
-from dexter.core.base_engine import (
-
-    BaseEngine
-
-)
+from dexter.core.base_engine import BaseEngine
 
 
-class RobotsEngine(
+class RobotsEngine(BaseEngine):
 
-    BaseEngine
-
-):
-
-    name = "robots"
-
-    def run(
-
-            self,
-
-            target
-
-    ):
-
-        result = {}
+    def run(self, target):
+        data = {}
 
         try:
+            base = target.rstrip("/")
+            url = base + "/robots.txt"
+            response = requests.get(url, timeout=10, allow_redirects=True)
 
-            r = requests.get(
-
-                f"https://{target}/robots.txt",
-
-                timeout=10
-
-            )
-
-            result["status"] = (
-
-                r.status_code
-
-            )
-
-            result["found"] = (
-
-                r.status_code == 200
-
-            )
-
-        except:
-
+            if response.status_code == 200:
+                data["url"] = url
+                data["content"] = response.text
+        except Exception:
             pass
 
-        return result
+        return data

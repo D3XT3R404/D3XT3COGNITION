@@ -2,16 +2,10 @@ from abc import ABC, abstractmethod
 
 
 class BaseEngine(ABC):
-    """
-    Base class untuk seluruh engine DEXTER.
-    """
-
-    # wajib dioverride
-    name = "base"
+    @property
+    def name(self):
+        return self.__class__.__name__.replace("Engine", "").lower()
 
     @abstractmethod
-    def run(self, context):
-        """
-        Jalankan engine.
-        """
+    def run(self, target):
         raise NotImplementedError
