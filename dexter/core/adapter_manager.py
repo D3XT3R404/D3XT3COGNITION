@@ -1,47 +1,36 @@
-class AdapterManager:
-    def __init__(self):
-        self.adapters = []
+from abc import ABC, abstractmethod
+from shutil import which
+from urllib.parse import urlparse
 
-    def register(self, adapter):
-        self.adapters.append(adapter)
 
-    def run_all(self, target, results=None):
-        collected = []
+class BaseAdapter(ABC):
+    binary = None
 
-        for adapter in self.adapters:
-            if not adapter.available():
-                continue
+    @property
+    def name(self):
+        return self.__class__.__name__.replace("Adapter", "").lower()
 
-            if adapter.name == "wpscan":
-                wp_detected = False
+    def available(self):
+        if not self.binary:
+            return True
+        return which(self.binary) is not None
 
-                if isinstance(results, dict):
-                    wordpress = results.get("wordpress", {})
-                    cms = results.get("cms")
-                    technologies = results.get("technology", [])
+    def normalize_target(self, target):
+        if hasattr(target, "target"):
+            target = getattr(target, "target")
+        target = str(target).strip()
+        if not target.startswith(("http://", "https://")):
+            target = "https://" + target
+        return target.rstrip("/")
 
-                    if isinstance(wordpress, dict) and wordpress.get("detected"):
-                        wp_detected = True
-                    elif cms == "WordPress":
-                        wp_detected = True
-                    elif "WordPress" in technologies:
-                        wp_detected = True
+    def host_only(self, target):
+        url = self.normalize_target(target)
+        parsed = urlparse(url)
+        return parsed.hostname or parsed.netloc
 
-                if not wp_detected:
-                    continue
+    def run(self, target, results=None):
+        return self.execute(target, results=results)
 
-            try:
-                data = adapter.execute(target, results=results)
-                collected.append({
-                    "adapter": adapter.name,
-                    "data": data,
-                })
-            except Exception as e:
-                collected.append({
-                    "adapter": adapter.name,
-                    "data": {
-                        "error": str(e)
-                    }
-                })
-
-        return collected
+    @abstractmethod
+    def execute(self, target, results=None):
+        raise NotImplementedError

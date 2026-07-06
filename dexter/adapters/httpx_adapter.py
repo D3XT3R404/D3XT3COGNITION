@@ -8,10 +8,12 @@ class HttpxAdapter(BaseAdapter):
     binary = "httpx"
 
     def execute(self, target, results=None):
+        url = self.normalize_target(target)
+
         output = {
             "source": "httpx",
-            "raw": "",
-            "parsed": [],
+            "summary": {},
+            "items": [],
             "error": None,
         }
 
@@ -22,14 +24,12 @@ class HttpxAdapter(BaseAdapter):
         try:
             cmd = [
                 self.binary,
-                "-json",
-                "-title",
-                "-tech-detect",
-                "-status-code",
-                "-follow-redirects",
-                "-silent",
                 "-u",
-                target,
+                url,
+                "-j",
+                "-title",
+                "-td",
+                "-sc",
             ]
 
             proc = subprocess.run(
@@ -40,21 +40,38 @@ class HttpxAdapter(BaseAdapter):
             )
 
             raw = (proc.stdout or "").strip()
-            output["raw"] = raw
-
             if proc.returncode != 0 and not raw:
                 output["error"] = f"httpx exited with code {proc.returncode}"
                 return output
 
-            parsed = []
+            items = []
             for line in raw.splitlines():
+                line = line.strip()
+                if not line:
+                    continue
                 try:
                     item = json.loads(line)
-                    parsed.append(item)
+                    items.append(item)
                 except Exception:
                     continue
 
-            output["parsed"] = parsed
+            output["items"] = items
+
+            if items:
+                item = items[0]
+                output["summary"] = {
+                    "url": item.get("url", url),
+                    "title": item.get("title"),
+                    "status_code": item.get("status_code"),
+                    "webserver": item.get("webserver"),
+                    "host_ip": item.get("host_ip"),
+                    "scheme": item.get("scheme"),
+                    "content_type": item.get("content_type"),
+                    "tech": item.get("tech", []),
+                    "cpe": item.get("cpe", []),
+                    "jarm": item.get("jarm"),
+                    "cdn": item.get("cdn"),
+                }
 
         except Exception as e:
             output["error"] = str(e)

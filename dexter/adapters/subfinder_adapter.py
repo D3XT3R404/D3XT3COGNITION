@@ -7,10 +7,12 @@ class SubfinderAdapter(BaseAdapter):
     binary = "subfinder"
 
     def execute(self, target, results=None):
+        host = self.host_only(target)
+
         output = {
             "source": "subfinder",
             "subdomains": [],
-            "raw": "",
+            "count": 0,
             "error": None,
         }
 
@@ -19,12 +21,11 @@ class SubfinderAdapter(BaseAdapter):
             return output
 
         try:
-            host = target.replace("https://", "").replace("http://", "").split("/")[0]
-
             cmd = [
                 self.binary,
                 "-d",
                 host,
+                "-all",
                 "-silent",
             ]
 
@@ -36,7 +37,9 @@ class SubfinderAdapter(BaseAdapter):
             )
 
             raw = (proc.stdout or "").strip()
-            output["raw"] = raw
+            if proc.returncode != 0 and not raw:
+                output["error"] = f"subfinder exited with code {proc.returncode}"
+                return output
 
             subs = []
             for line in raw.splitlines():
@@ -44,7 +47,9 @@ class SubfinderAdapter(BaseAdapter):
                 if line:
                     subs.append(line)
 
-            output["subdomains"] = sorted(set(subs))
+            subs = sorted(set(subs))
+            output["subdomains"] = subs
+            output["count"] = len(subs)
 
         except Exception as e:
             output["error"] = str(e)

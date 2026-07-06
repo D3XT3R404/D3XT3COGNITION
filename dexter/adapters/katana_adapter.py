@@ -8,10 +8,12 @@ class KatanaAdapter(BaseAdapter):
     binary = "katana"
 
     def execute(self, target, results=None):
+        url = self.normalize_target(target)
+
         output = {
             "source": "katana",
             "urls": [],
-            "raw": "",
+            "count": 0,
             "error": None,
         }
 
@@ -23,9 +25,9 @@ class KatanaAdapter(BaseAdapter):
             cmd = [
                 self.binary,
                 "-u",
-                target,
-                "-json",
-                "-silent",
+                url,
+                "-jsonl",
+                "-nc",
                 "-d",
                 "3",
             ]
@@ -38,19 +40,38 @@ class KatanaAdapter(BaseAdapter):
             )
 
             raw = (proc.stdout or "").strip()
-            output["raw"] = raw
+            if proc.returncode != 0 and not raw:
+                output["error"] = f"katana exited with code {proc.returncode}"
+                return output
 
             urls = []
             for line in raw.splitlines():
+                line = line.strip()
+                if not line:
+                    continue
                 try:
                     item = json.loads(line)
-                    url = item.get("url") or item.get("request")
-                    if url:
-                        urls.append(url)
                 except Exception:
                     continue
 
-            output["urls"] = sorted(set(urls))
+                endpoint = None
+                if isinstance(item, dict):
+                    endpoint = item.get("url")
+
+                    req = item.get("request", {})
+                    if isinstance(req, dict):
+                        endpoint = endpoint or req.get("endpoint") or req.get("url")
+
+                    resp = item.get("response", {})
+                    if isinstance(resp, dict):
+                        endpoint = endpoint or resp.get("url")
+
+                if endpoint:
+                    urls.append(endpoint)
+
+            urls = sorted(set(urls))
+            output["urls"] = urls
+            output["count"] = len(urls)
 
         except Exception as e:
             output["error"] = str(e)

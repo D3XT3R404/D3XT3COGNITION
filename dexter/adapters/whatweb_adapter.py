@@ -8,10 +8,11 @@ class WhatWebAdapter(BaseAdapter):
     binary = "whatweb"
 
     def execute(self, target, results=None):
+        url = self.normalize_target(target)
+
         output = {
             "source": "whatweb",
             "detected": [],
-            "raw": "",
             "error": None,
         }
 
@@ -23,47 +24,53 @@ class WhatWebAdapter(BaseAdapter):
             cmd = [
                 self.binary,
                 "--color=never",
-                "--no-errors",
-                target,
+                url,
             ]
 
             proc = subprocess.run(
                 cmd,
                 capture_output=True,
                 text=True,
-                timeout=120,
+                timeout=180,
             )
 
-            raw = (proc.stdout or "") + "\n" + (proc.stderr or "")
-            output["raw"] = raw.strip()
-
-            if proc.returncode != 0 and not raw.strip():
+            raw = ((proc.stdout or "") + "\n" + (proc.stderr or "")).strip()
+            if proc.returncode != 0 and not raw:
                 output["error"] = f"whatweb exited with code {proc.returncode}"
                 return output
 
             detected = []
-
-            # WhatWeb output biasanya seperti:
-            # Apache[2.4.63], PHP[8.3.29], WordPress, jQuery
-            tokens = re.findall(r"([A-Za-z0-9_.+-]+)(?:\[(.*?)\])?", raw)
-
-            for name, version in tokens:
-                name = name.strip()
-                version = version.strip()
-
-                if not name:
+            for line in raw.splitlines():
+                if "[" not in line and "," not in line:
                     continue
 
-                if name.lower() in {"whatweb", "target"}:
-                    continue
+                for chunk in re.split(r",\s*", line):
+                    chunk = chunk.strip()
+                    if not chunk:
+                        continue
+                    if chunk.lower().startswith(("whatweb", "target", "http://", "https://")):
+                        continue
 
-                item = {
-                    "name": name,
-                    "version": version or None,
-                    "confidence": 70,
-                    "source": "whatweb",
-                }
-                detected.append(item)
+                    m = re.match(
+                        r"^(?P<name>[A-Za-z0-9_.+\- ]+?)(?:\[(?P<version>[^\]]+)\])?$",
+                        chunk,
+                    )
+                    if not m:
+                        continue
+
+                    name = m.group("name").strip()
+                    version = (m.group("version") or "").strip() or None
+                    if not name:
+                        continue
+
+                    detected.append(
+                        {
+                            "name": name,
+                            "version": version,
+                            "confidence": 70,
+                            "source": "whatweb",
+                        }
+                    )
 
             output["detected"] = detected
 
