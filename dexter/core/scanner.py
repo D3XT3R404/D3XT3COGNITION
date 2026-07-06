@@ -47,7 +47,6 @@ class Scanner:
 
     def build_capture_registry(self):
         registry = EngineRegistry()
-
         registry.register(HeaderEngine())
         registry.register(CookieEngine())
         registry.register(MetadataEngine())
@@ -57,41 +56,79 @@ class Scanner:
         registry.register(CommentEngine())
         registry.register(EmailEngine())
         registry.register(EvidenceEngine())
-
         return registry
 
-    def build_correlation_registry(self, deep=False):
+    def build_basic_registry(self):
         registry = EngineRegistry()
-
         registry.register(TechnologyEngine())
         registry.register(FrameworkEngine())
         registry.register(VersionEngine())
         registry.register(FingerprintEngine())
         registry.register(KnowledgeEngine())
-
-        if deep:
-            registry.register(DnsEngine())
-            registry.register(TlsEngine())
-            registry.register(RobotsEngine())
-            registry.register(SitemapEngine())
-            registry.register(JsEngine())
-            registry.register(CmsEngine())
-            registry.register(WordpressEngine())
-            registry.register(WafEngine())
-            registry.register(ConfidenceEngine())
-
         return registry
 
-    def scan(self, target, deep=False):
+    def build_deep_registry(self):
+        registry = EngineRegistry()
+        registry.register(DnsEngine())
+        registry.register(TlsEngine())
+        registry.register(RobotsEngine())
+        registry.register(SitemapEngine())
+        registry.register(JsEngine())
+        registry.register(CmsEngine())
+        registry.register(WordpressEngine())
+        registry.register(WafEngine())
+        registry.register(ConfidenceEngine())
+        return registry
+
+    def iter_scan(self, target, deep=False):
         context = ScanContext(target, deep)
         context.results["target"] = context.target
         context.results["host"] = context.hostname
 
-        self.build_capture_registry().run(context)
-        self.build_correlation_registry(deep=False).run(context)
+        # capture dulu
+        for engine in self.build_capture_registry().engines:
+            name = engine.name
+            try:
+                data = engine.run(context)
+                context.results[name] = data
+            except Exception as e:
+                data = {"error": str(e)}
+                context.results[name] = data
+            yield name, data
+
+        # basic correlation
+        for engine in self.build_basic_registry().engines:
+            name = engine.name
+            try:
+                data = engine.run(context)
+                context.results[name] = data
+            except Exception as e:
+                data = {"error": str(e)}
+                context.results[name] = data
+            yield name, data
 
         if deep:
-            self.adapter_manager.run(context.target, context.results)
-            self.build_correlation_registry(deep=True).run(context)
+            # adapter dulu
+            adapters_result = self.adapter_manager.run(context.target, context.results)
+            context.results.update(adapters_result)
+            for adapter_name in adapters_result:
+                yield adapter_name, adapters_result[adapter_name]
+
+            # deep correlation setelah adapter
+            for engine in self.build_deep_registry().engines:
+                name = engine.name
+                try:
+                    data = engine.run(context)
+                    context.results[name] = data
+                except Exception as e:
+                    data = {"error": str(e)}
+                    context.results[name] = data
+                yield name, data
 
         return context.results
+
+    def scan(self, target, deep=False):
+        final = None
+        for name, data in self.iter_scan(target, deep=deep):
+            final = (name, data)
+        return final
