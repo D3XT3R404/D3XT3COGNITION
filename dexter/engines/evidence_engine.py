@@ -1,5 +1,4 @@
 from dexter.core.base_engine import BaseEngine
-import requests
 
 
 class EvidenceEngine(BaseEngine):
@@ -8,7 +7,7 @@ class EvidenceEngine(BaseEngine):
         evidence = []
 
         try:
-            response = requests.get(target, timeout=10, allow_redirects=True)
+            response = target.fetch(timeout=15) if hasattr(target, "fetch") else None
 
             server = response.headers.get("Server")
             powered = response.headers.get("X-Powered-By")

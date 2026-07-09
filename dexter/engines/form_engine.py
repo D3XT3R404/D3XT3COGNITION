@@ -1,5 +1,4 @@
 from bs4 import BeautifulSoup
-import requests
 
 from dexter.core.base_engine import BaseEngine
 
@@ -10,7 +9,7 @@ class FormEngine(BaseEngine):
         forms = []
 
         try:
-            response = requests.get(target, timeout=10, allow_redirects=True)
+            response = target.fetch(timeout=15) if hasattr(target, "fetch") else None
             soup = BeautifulSoup(response.text, "html.parser")
 
             for form in soup.find_all("form"):

@@ -45,6 +45,27 @@ class Scanner:
         self.adapter_manager.register(SubfinderAdapter())
         self.adapter_manager.register(WPScanAdapter())
 
+    def _store_result(self, context, name, data):
+        context.results[name] = data
+        if name == "header":
+            context.results["headers"] = data
+            context.headers = data if isinstance(data, dict) else {}
+        elif name == "cookie":
+            context.results["cookies"] = data
+            context.cookies = data if isinstance(data, dict) else {}
+        elif name == "metadata":
+            context.metadata = data if isinstance(data, dict) else {}
+        elif name == "technology":
+            context.technologies = data if isinstance(data, list) else []
+        elif name == "endpoints":
+            context.endpoints = data if isinstance(data, list) else []
+        elif name == "forms":
+            context.forms = data if isinstance(data, list) else []
+        elif name == "comments":
+            context.comments = data if isinstance(data, list) else []
+        elif name == "emails":
+            context.emails = data if isinstance(data, list) else []
+
     def build_capture_registry(self):
         registry = EngineRegistry()
         registry.register(HeaderEngine())
@@ -90,10 +111,9 @@ class Scanner:
             name = engine.name
             try:
                 data = engine.run(context)
-                context.results[name] = data
             except Exception as e:
                 data = {"error": str(e)}
-                context.results[name] = data
+            self._store_result(context, name, data)
             yield name, data
 
         # basic correlation
@@ -101,10 +121,9 @@ class Scanner:
             name = engine.name
             try:
                 data = engine.run(context)
-                context.results[name] = data
             except Exception as e:
                 data = {"error": str(e)}
-                context.results[name] = data
+            self._store_result(context, name, data)
             yield name, data
 
         if deep:
@@ -119,16 +138,15 @@ class Scanner:
                 name = engine.name
                 try:
                     data = engine.run(context)
-                    context.results[name] = data
                 except Exception as e:
                     data = {"error": str(e)}
-                    context.results[name] = data
+                self._store_result(context, name, data)
                 yield name, data
 
         return context.results
 
     def scan(self, target, deep=False):
-        final = None
+        final = {}
         for name, data in self.iter_scan(target, deep=deep):
-            final = (name, data)
+            final[name] = data
         return final

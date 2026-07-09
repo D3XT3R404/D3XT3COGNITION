@@ -33,7 +33,7 @@ class SubfinderAdapter(BaseAdapter):
                 cmd,
                 capture_output=True,
                 text=True,
-                timeout=300,
+                timeout=120,
             )
 
             raw = (proc.stdout or "").strip()

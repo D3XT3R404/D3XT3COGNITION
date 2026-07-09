@@ -1,5 +1,3 @@
-import requests
-
 from dexter.core.base_engine import BaseEngine
 
 
@@ -53,7 +51,7 @@ class WafEngine(BaseEngine):
             if not waf:
                 response = getattr(target, "response", None)
                 if response is None:
-                    response = requests.get(str(getattr(target, "target", target)), timeout=15, allow_redirects=True)
+                    response = target.fetch(timeout=15) if hasattr(target, "fetch") else None
 
                 headers = {k.lower(): str(v).lower() for k, v in response.headers.items()}
                 if "cf-ray" in headers or "cloudflare" in headers.get("server", ""):

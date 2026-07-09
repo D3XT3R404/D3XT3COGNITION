@@ -1,5 +1,4 @@
 import re
-import requests
 
 from dexter.core.base_engine import BaseEngine
 
@@ -43,7 +42,8 @@ class VersionEngine(BaseEngine):
             if response is not None:
                 headers = dict(response.headers)
             else:
-                headers = results.get("headers", {}) if isinstance(results.get("headers", {}), dict) else {}
+                header_data = results.get("headers") or results.get("header") or {}
+                headers = header_data if isinstance(header_data, dict) else {}
 
             server = str(headers.get("Server", ""))
             powered = str(headers.get("X-Powered-By", ""))

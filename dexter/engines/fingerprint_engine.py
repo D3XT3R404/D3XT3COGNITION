@@ -1,7 +1,6 @@
 import os
 import yaml
 import json
-import requests
 
 from dexter.core.base_engine import BaseEngine
 
@@ -42,7 +41,7 @@ class FingerprintEngine(BaseEngine):
         try:
             response = getattr(target, "response", None)
             if response is None:
-                response = requests.get(str(getattr(target, "target", target)), timeout=15, allow_redirects=True)
+                response = target.fetch(timeout=15) if hasattr(target, "fetch") else None
 
             html = response.text.lower()
             headers_blob = "\n".join(f"{k}: {v}" for k, v in response.headers.items()).lower()

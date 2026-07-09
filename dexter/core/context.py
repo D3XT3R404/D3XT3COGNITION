@@ -1,5 +1,6 @@
-import requests
 from urllib.parse import urlparse
+
+import requests
 
 
 class ScanContext:
@@ -15,6 +16,15 @@ class ScanContext:
         self.deep = deep
 
         self.session = requests.Session()
+        self.session.headers.update(
+            {
+                "User-Agent": (
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                    "AppleWebKit/537.36 (KHTML, like Gecko) "
+                    "Chrome/126.0 Safari/537.36 DEXTER/0.1"
+                )
+            }
+        )
         self.response = None
         self.results = {}
 
@@ -49,6 +59,33 @@ class ScanContext:
 
     def decode(self, encoding="utf-8", errors="strict"):
         return self.target
+
+    def fetch(self, timeout=15):
+        if self.response is not None:
+            return self.response
+
+        errors = []
+        candidates = [self.target]
+        if self.target.startswith("https://"):
+            candidates.append("http://" + self.target[len("https://"):])
+
+        for url in candidates:
+            try:
+                response = self.session.get(url, timeout=timeout, allow_redirects=True)
+                self.response = response
+                self.target = response.url.rstrip("/")
+
+                parsed = urlparse(self.target)
+                self.scheme = parsed.scheme or self.scheme
+                self.host = parsed.netloc or self.host
+                self.hostname = parsed.hostname or self.hostname
+                self.root_domain = self.hostname
+                return response
+            except requests.RequestException as exc:
+                errors.append(f"{url}: {exc}")
+
+        self.errors.extend(errors)
+        raise requests.RequestException("; ".join(errors))
 
     def __str__(self):
         return self.target

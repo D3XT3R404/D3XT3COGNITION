@@ -42,15 +42,14 @@ class AdapterManager:
         if results is None:
             results = {}
 
-        results.setdefault("adapters", {})
+        adapter_results = {}
 
         for adapter in self.adapters:
             adapter_name = adapter.name
 
             if not adapter.available():
                 data = {"error": f"{adapter.binary or adapter.name} not found"}
-                results[adapter_name] = data
-                results["adapters"][adapter_name] = data
+                adapter_results[adapter_name] = data
                 continue
 
             if adapter_name == "wpscan" and not self._should_run_wpscan(results):
@@ -67,7 +66,7 @@ class AdapterManager:
             except Exception as e:
                 data = {"error": str(e)}
 
-            results[adapter_name] = data
-            results["adapters"][adapter_name] = data
+            adapter_results[adapter_name] = data
 
-        return results
+        results["adapters"] = adapter_results
+        return adapter_results

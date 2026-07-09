@@ -36,7 +36,7 @@ class HttpxAdapter(BaseAdapter):
                 cmd,
                 capture_output=True,
                 text=True,
-                timeout=180,
+                timeout=60,
             )
 
             raw = (proc.stdout or "").strip()

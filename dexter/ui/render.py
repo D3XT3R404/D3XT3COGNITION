@@ -5,6 +5,13 @@ from rich.table import Table
 console = Console()
 
 
+def _short_value(value, limit=180):
+    text = str(value)
+    if len(text) > limit:
+        return text[: limit - 3] + "..."
+    return text
+
+
 def render_deep_warning():
     console.print(
         Panel(
@@ -24,7 +31,13 @@ def _mapping_table(title, data):
 
     if isinstance(data, dict) and data:
         for k, v in data.items():
-            table.add_row(str(k), str(v))
+            if isinstance(v, (list, tuple, set)):
+                value = f"{len(v)} item(s)"
+            elif isinstance(v, dict):
+                value = f"{len(v)} field(s)"
+            else:
+                value = _short_value(v)
+            table.add_row(str(k), value)
     else:
         table.add_row("-", "-")
 

@@ -14,6 +14,13 @@ dependencies = [
     "typer",
     "pyyaml",
     "requests",
+    "beautifulsoup4",
+    "dnspython",
+    "python-whois",
+    "jinja2",
+    "tldextract",
+    "lxml",
+    "cryptography",
 ]
 
 [project.scripts]

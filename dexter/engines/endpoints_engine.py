@@ -1,6 +1,5 @@
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
-import requests
 
 from dexter.core.base_engine import BaseEngine
 
@@ -21,14 +20,14 @@ class EndpointEngine(BaseEngine):
         endpoints = set()
 
         try:
-            response = requests.get(target, timeout=10, allow_redirects=True)
+            response = target.fetch(timeout=15) if hasattr(target, "fetch") else None
             soup = BeautifulSoup(response.text, "html.parser")
 
             for tag, attr in self.TAGS.items():
                 for node in soup.find_all(tag):
                     value = node.get(attr)
                     if value:
-                        endpoints.add(urljoin(target, value))
+                        endpoints.add(urljoin(response.url, value))
         except Exception:
             pass
 

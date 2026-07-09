@@ -1,5 +1,4 @@
 import re
-import requests
 
 from dexter.core.base_engine import BaseEngine
 
@@ -64,11 +63,13 @@ class TechnologyEngine(BaseEngine):
                 headers = dict(response.headers)
                 html = response.text.lower()
             else:
-                headers = results.get("headers", {}) if isinstance(results.get("headers", {}), dict) else {}
+                header_data = results.get("headers") or results.get("header") or {}
+                headers = header_data if isinstance(header_data, dict) else {}
                 html = ""
 
             server = str(headers.get("Server", "")).lower()
             powered = str(headers.get("X-Powered-By", "")).lower()
+            content_type = str(headers.get("Content-Type", "")).lower()
 
             for key, value in self.SERVER_MAP.items():
                 if key in server:
@@ -86,22 +87,39 @@ class TechnologyEngine(BaseEngine):
             if "wp-content" in html or "wp-includes" in html:
                 technologies.append("WordPress")
 
+            generator = re.search(
+                r'<meta[^>]+name=["\']generator["\'][^>]+content=["\']([^"\']+)["\']',
+                html,
+                re.I,
+            )
+            if generator:
+                gen = generator.group(1)
+                for name in ("WordPress", "Drupal", "Joomla", "Next.js", "Elementor"):
+                    if name.lower() in gen.lower():
+                        technologies.append(name)
+                        version = re.search(rf"{re.escape(name)}\s*([\d.]+)", gen, re.I)
+                        if version:
+                            versions[name] = version.group(1)
+
             if "drupal" in html or "/sites/default/" in html:
                 technologies.append("Drupal")
 
             if "joomla" in html:
                 technologies.append("Joomla")
 
-            if "bootstrap" in html:
+            if "text/html" in content_type:
+                technologies.append("HTML")
+
+            if "bootstrap" in html or "bootstrap.min.css" in html or "bootstrap.min.js" in html:
                 technologies.append("Bootstrap")
 
-            if "jquery" in html:
+            if "jquery" in html or "jquery.min.js" in html:
                 technologies.append("jQuery")
 
-            if "vue" in html:
+            if "vue" in html or "__vue__" in html:
                 technologies.append("Vue.js")
 
-            if "react" in html:
+            if "react" in html or "__react" in html or "react-dom" in html:
                 technologies.append("React")
 
             if "alpine" in html:
@@ -109,6 +127,15 @@ class TechnologyEngine(BaseEngine):
 
             if "livewire" in html:
                 technologies.append("Livewire")
+
+            if "_next/static" in html or "__next_data__" in html:
+                technologies.append("Next.js")
+
+            if "elementor" in html:
+                technologies.append("Elementor")
+
+            if "cdn-cgi/" in html or "cf-ray" in "\n".join(headers.keys()).lower():
+                technologies.append("Cloudflare")
 
             httpx = results.get("httpx", {})
             if isinstance(httpx, dict):

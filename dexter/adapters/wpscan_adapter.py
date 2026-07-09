@@ -57,7 +57,7 @@ class WPScanAdapter(BaseAdapter):
                 cmd,
                 capture_output=True,
                 text=True,
-                timeout=600,
+                timeout=180,
             )
 
             stdout = (proc.stdout or "").strip()
