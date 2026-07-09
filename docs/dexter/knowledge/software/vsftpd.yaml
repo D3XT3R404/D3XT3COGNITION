@@ -1,0 +1,20 @@
+name: vsftpd
+
+signatures:
+  banners:
+    - "vsftpd"
+
+versions:
+  "2.3.4":
+    status: compromised
+    severity: critical
+    cves:
+      - CVE-2011-2523
+    description: Backdoored version distributed in compromised package
+    impact:
+      - Remote shell access via backdoor trigger
+    references:
+      - https://nvd.nist.gov/vuln/detail/CVE-2011-2523
+
+notes:
+  - "This is one of the most notorious supply-chain compromised versions"

@@ -1,0 +1,29 @@
+name: Nginx
+
+signatures:
+  headers:
+    - "nginx"
+  server_regex:
+    - "nginx/([\\d\\.]+)"
+
+versions:
+  "1.18.0":
+    status: vulnerable
+    severity: medium
+    cves:
+      - CVE-2021-23017
+    description: DNS resolver vulnerability leading to heap overflow in resolver module
+    impact:
+      - Memory corruption
+      - Possible RCE in specific configurations
+    condition: "resolver enabled in config"
+    references:
+      - https://nvd.nist.gov/vuln/detail/CVE-2021-23017
+
+  "1.20.x":
+    status: moderate
+    notes:
+      - "Generally stable but misconfiguration risks dominate real-world issues"
+
+notes:
+  - "Nginx vulnerabilities are often configuration-dependent rather than version-only"

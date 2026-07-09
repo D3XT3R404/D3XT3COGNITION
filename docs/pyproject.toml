@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=70", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dexter"
+version = "0.1.0"
+description = "D3XT3COGNITION Framework"
+readme = "README.md"
+requires-python = ">=3.10"
+
+dependencies = [
+    "rich",
+    "typer",
+    "pyyaml",
+    "requests",
+    "beautifulsoup4",
+    "dnspython",
+    "python-whois",
+    "jinja2",
+    "tldextract",
+    "lxml",
+    "cryptography",
+]
+
+[project.scripts]
+dexter = "dexter.__main__:main"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["dexter*"]

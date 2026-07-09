@@ -1,0 +1,11 @@
+requests
+rich
+typer
+beautifulsoup4
+dnspython
+python-whois
+jinja2
+pyyaml
+tldextract
+lxml
+cryptography

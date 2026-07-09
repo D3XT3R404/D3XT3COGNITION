@@ -1,0 +1,22 @@
+name: Next.js
+
+signatures:
+  html:
+    - "__NEXT_DATA__"
+  headers:
+    - "x-powered-by"
+
+versions:
+  "12.x - 14.x":
+    status: generally_safe
+    notes:
+      - "Framework core secure"
+      - "Risk depends on SSR logic, API routes, and middleware exposure"
+
+attack_surface:
+  - SSR injection (developer side)
+  - API routes
+  - misconfigured caching
+
+notes:
+  - "Most real-world vulnerabilities come from implementation mistakes, not framework bugs"

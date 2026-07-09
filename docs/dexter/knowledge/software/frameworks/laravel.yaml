@@ -1,0 +1,38 @@
+name: Laravel
+
+signatures:
+  cookies:
+    - "laravel_session"
+  headers:
+    - "XSRF-TOKEN"
+  html:
+    - "csrf-token"
+
+versions:
+  "5.x":
+    status: vulnerable
+    severity: high
+    notes:
+      - "Multiple historical RCE and deserialization issues depending on configuration"
+    risk_area:
+      - debug mode enabled
+      - exposed .env files
+
+  "8.x":
+    status: moderate
+    notes:
+      - "Framework secure by default but application-level misconfig is common attack vector"
+
+  "9.x - 10.x":
+    status: safe
+    notes:
+      - "Security mostly depends on developer implementation"
+
+attack_surface:
+  - .env exposure
+  - debug mode
+  - insecure serialization
+  - misconfigured queues
+
+references:
+  - https://laravel.com/docs

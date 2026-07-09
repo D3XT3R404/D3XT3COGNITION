@@ -1,0 +1,13 @@
+name: NextJS
+
+confidence: 90
+
+html:
+
+- __NEXT_DATA__
+
+- _next
+
+headers:
+
+- x-nextjs-cache

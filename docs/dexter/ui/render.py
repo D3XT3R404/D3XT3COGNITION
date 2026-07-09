@@ -1,9 +1,8 @@
 from rich import box
-from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
-console = Console()
+from dexter.ui.console import console
 
 LIMITS = {
     "metadata": 16,
