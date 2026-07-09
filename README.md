@@ -1,10 +1,13 @@
 # D3XT3COGNITION
 
+<img width="1099" height="264" alt="image" src="https://github.com/user-attachments/assets/c4ec1ca9-d645-48a3-97a1-4fd2786060e8" />
+
+
 **DEXTER** is a Python-based website information gathering framework for penetration testers, bug bounty hunters, and security researchers who need a structured first look at a target before vulnerability assessment.
 
-DEXTER combines passive and active reconnaissance signals into one command line workflow. It focuses on collecting, fingerprinting, correlating, and presenting useful website intelligence such as headers, cookies, metadata, technologies, CMS hints, JavaScript assets, endpoints, DNS, TLS, WAF indicators, WordPress details, and optional external-tool results.
+DEXTER combines passive and active reconnaissance signals into one command-line workflow. It focuses on collecting, fingerprinting, correlating, and presenting useful website intelligence such as headers, cookies, metadata, technologies, CMS hints, JavaScript assets, endpoints, DNS, TLS, WAF indicators, WordPress details, and optional external-tool results through **two scanning modes**: **Basic Scan** and **Deep Scan**.
 
-> DEXTER is an information gathering framework. It is not an exploit framework, not a vulnerability scanner, and not a replacement for tools such as Nuclei.
+> DEXTER is an information gathering framework. It is **not** an exploit framework, **not** a vulnerability scanner, and **not** a replacement for tools such as Nuclei.
 
 ## Purpose
 
@@ -18,11 +21,11 @@ Information Gathering -> Fingerprinting -> Correlation -> Knowledge -> Pentest P
 
 DEXTER helps answer questions such as:
 
-- What web server, language, CMS, framework, or library is likely being used?
-- Are security headers present or missing?
-- Are interesting endpoints, forms, emails, scripts, comments, robots, or sitemap entries exposed?
-- Is the site likely using WordPress, and if so, what themes/plugins can be observed?
-- Are DNS, TLS, WAF, or external reconnaissance signals worth reviewing before deeper testing?
+* What web server, language, CMS, framework, or library is likely being used?
+* Are security headers present or missing?
+* Are interesting endpoints, forms, emails, scripts, comments, robots, or sitemap entries exposed?
+* Is the site likely using WordPress, and if so, what themes/plugins can be observed?
+* Are DNS, TLS, WAF, or external reconnaissance signals worth reviewing before deeper testing?
 
 ## Features
 
@@ -30,19 +33,19 @@ DEXTER helps answer questions such as:
 
 The default scan performs fast website reconnaissance using internal engines:
 
-- HTTP headers
-- Cookies
-- Page metadata and meta tags
-- Security headers
-- Technologies and versions
-- CMS and framework hints
-- JavaScript libraries
-- Endpoints and forms
-- Interesting HTML comments
-- Email addresses found in page source
-- Evidence and confidence signals
-- Local fingerprint matching
-- Knowledge correlation
+* HTTP headers
+* Cookies
+* Page metadata and meta tags
+* Security headers
+* Technologies and versions
+* CMS and framework hints
+* JavaScript libraries
+* Endpoints and forms
+* Interesting HTML comments
+* Email addresses found in page source
+* Evidence and confidence signals
+* Local fingerprint matching
+* Knowledge correlation
 
 Example:
 
@@ -54,21 +57,22 @@ dexter scan example.com
 
 Deep scan enables additional reconnaissance engines and external adapters where available:
 
-- DNS inspection
-- TLS inspection
-- robots.txt parsing
-- sitemap parsing
-- JavaScript asset collection
-- CMS and WordPress enrichment
-- WAF detection
-- Confidence scoring
-- Optional external tools:
-  - httpx
-  - WhatWeb
-  - WPScan
-  - WAFW00F
-  - Katana
-  - Subfinder
+* DNS inspection
+* TLS inspection
+* robots.txt parsing
+* sitemap parsing
+* JavaScript asset collection
+* CMS and WordPress enrichment
+* WAF detection
+* Confidence scoring
+* Optional external tools:
+
+  * httpx
+  * WhatWeb
+  * WPScan
+  * WAFW00F
+  * Katana
+  * Subfinder
 
 Example:
 
@@ -77,6 +81,113 @@ dexter scan example.com --deep
 ```
 
 If an external tool is not installed, DEXTER will report that clearly and continue with the rest of the scan.
+
+## Commands
+
+## `scan`
+
+Main command for reconnaissance and streaming results to the terminal.
+
+### Basic scan
+
+```bash
+python -m dexter scan example.com
+```
+
+### Deep scan
+
+DNS, TLS, WAF, CMS, and external adapters:
+
+```bash
+python -m dexter scan example.com --deep
+```
+
+### Scan and save reports
+
+Save output as JSON, Markdown, TXT, and HTML:
+
+```bash
+python -m dexter scan example.com --save
+```
+
+### Deep scan and save reports
+
+```bash
+python -m dexter scan example.com --deep --save
+```
+
+### Scan without the summary panel
+
+```bash
+python -m dexter scan example.com --no-summary
+```
+
+### If installed via `pip install -e .`
+
+```bash
+dexter scan example.com --deep --save
+```
+
+## `report`
+
+Runs scan + automatically saves all report formats to disk.
+
+### Basic report
+
+```bash
+python -m dexter report example.com
+```
+
+### Deep report
+
+```bash
+python -m dexter report example.com --deep
+```
+
+### Custom output folder
+
+```bash
+python -m dexter report example.com --deep --output /tmp/hasil-scan
+```
+
+### Via pip-installed command
+
+```bash
+dexter report example.com --deep -o ./my-reports
+```
+
+### Report output structure
+
+Reports are saved to:
+
+```text
+reports/
+└── example.com/
+    └── 20250709_142301/
+        ├── report.json
+        ├── report.md
+        ├── report.txt
+        └── report.html
+```
+
+## `version`
+
+Show the installed version.
+
+```bash
+python -m dexter version
+dexter version
+```
+
+## `help`
+
+View available options for every command.
+
+```bash
+python -m dexter --help
+python -m dexter scan --help
+python -m dexter report --help
+```
 
 ## Example Output
 
@@ -128,17 +239,17 @@ DEXTER is built with a modular pipeline:
 
 ```text
 CLI
- |
+|
 Scanner
- |
+|
 Registry
- |
+|
 Engines
- |
+|
 Context
- |
+|
 Results
- |
+|
 Renderer
 ```
 
@@ -146,47 +257,47 @@ External tools are integrated through adapters:
 
 ```text
 Scanner
- |
+|
 Adapter Manager
- |
+|
 Adapters
- |
+|
 httpx / WhatWeb / WPScan / Katana / Subfinder / WAFW00F
 ```
 
 ### Core Concepts
 
-- **CLI**: User-facing command interface.
-- **Scanner**: Coordinates the scan flow.
-- **ScanContext**: Stores target state, response data, shared session, and collected results.
-- **Engines**: Internal modules that analyze HTTP responses, headers, HTML, DNS, TLS, CMS hints, and other signals.
-- **Adapters**: Wrappers for external reconnaissance tools.
-- **Renderer**: Displays scan results in readable terminal tables and panels.
+* **CLI**: User-facing command interface.
+* **Scanner**: Coordinates the scan flow.
+* **ScanContext**: Stores target state, response data, shared session, and collected results.
+* **Engines**: Internal modules that analyze HTTP responses, headers, HTML, DNS, TLS, CMS hints, and other signals.
+* **Adapters**: Wrappers for external reconnaissance tools.
+* **Renderer**: Displays scan results in readable terminal tables and panels.
 
 ## Project Structure
 
 ```text
 dexter/
-  adapters/       External tool integrations
-  core/           Scanner, registry, context, adapter manager
-  engines/        Internal reconnaissance and correlation engines
-  fingerprints/   YAML fingerprints for CMS/framework/library detection
-  knowledge/      Software knowledge base entries
-  reports/        Report generation modules
-  templates/      HTML report template
-  ui/             CLI output rendering
-  cli.py          Typer CLI commands
+├── adapters/         External tool integrations
+├── core/             Scanner, registry, context, adapter manager
+├── engines/          Internal reconnaissance and correlation engines
+├── fingerprints/     YAML fingerprints for CMS/framework/library detection
+├── knowledge/        Software knowledge base entries
+├── reports/          Report generation modules
+├── templates/        HTML report template
+├── ui/               CLI output rendering
+└── cli.py            Typer CLI commands
 ```
 
 ## Installation
 
 ### Requirements
 
-- Python 3.10 or newer
-- pip
-- Git
+* Python 3.10 or newer
+* pip
+* Git
 
-### Install From Source
+### Install from source
 
 ```bash
 git clone https://github.com/D3XT3R404/D3XT3COGNITION.git
@@ -194,13 +305,13 @@ cd D3XT3COGNITION
 python -m pip install -e .
 ```
 
-If you prefer installing from `requirements.txt` during development:
+### Development install with requirements
 
 ```bash
 python -m pip install -r requirements.txt
 ```
 
-### Verify Installation
+### Verify installation
 
 ```bash
 dexter version
@@ -214,7 +325,7 @@ python -m dexter scan example.com
 
 ## Usage
 
-### Basic Scan
+### Basic scan
 
 ```bash
 dexter scan example.com
@@ -229,13 +340,27 @@ dexter scan http://example.com
 
 If no scheme is provided, DEXTER tries HTTPS first and can fall back to HTTP when needed.
 
-### Deep Scan
+### Deep scan
 
 ```bash
 dexter scan example.com --deep
 ```
 
 Deep scan may take longer because it can perform DNS, TLS, robots, sitemap, WordPress, WAF, and external-tool checks.
+
+### Scan and save reports
+
+```bash
+dexter scan example.com --save
+dexter scan example.com --deep --save
+```
+
+### Report command
+
+```bash
+dexter report example.com
+dexter report example.com --deep
+```
 
 ### Version
 
@@ -344,11 +469,11 @@ dexter scan example.com --deep
 
 The repository contains report modules for text, Markdown, JSON, and HTML output. The CLI report workflow is still being expanded, but the codebase already includes:
 
-- `dexter/reports/text_report.py`
-- `dexter/reports/markdown_report.py`
-- `dexter/reports/json_report.py`
-- `dexter/reports/html_report.py`
-- `dexter/templates/report.html`
+* `dexter/reports/text_report.py`
+* `dexter/reports/markdown_report.py`
+* `dexter/reports/json_report.py`
+* `dexter/reports/html_report.py`
+* `dexter/templates/report.html`
 
 ## Troubleshooting
 
@@ -410,18 +535,18 @@ Also verify the target is reachable from your network.
 
 Planned and possible future integrations:
 
-- Nuclei
-- Naabu
-- Waybackurls
-- Gau
-- Hakrawler
-- Assetfinder
-- Shodan API
-- BuiltWith API
-- VirusTotal API
-- More report export workflows
-- Improved confidence scoring
-- Richer fingerprint and knowledge base coverage
+* Nuclei
+* Naabu
+* Waybackurls
+* Gau
+* Hakrawler
+* Assetfinder
+* Shodan API
+* BuiltWith API
+* VirusTotal API
+* More report export workflows
+* Improved confidence scoring
+* Richer fingerprint and knowledge base coverage
 
 ## Legal Notice
 
